@@ -1,0 +1,9 @@
+{
+  "name": " OPUS MAGNUM MEDIA v3.0",
+  "description": "OPUS MAGNUM MEDIA, powered by MAGNUM AI & AURORA AI (Gemini 3.0 Pro), is where strategy meets art. We empower professionals and brands to amplify their vision through our intelligent, AI-powered Project OS.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}
