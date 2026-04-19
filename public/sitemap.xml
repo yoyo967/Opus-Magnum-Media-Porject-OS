@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OPUS MAGNUM MEDIA · Portfolio Sitemap · Canonical v1.8 · 2026-04-19 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://opusmagnum.media/portfolio</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+
+  <!-- P0 · Operator-Doktrin -->
+  <url><loc>https://opusmagnum.media/portfolio/doktrin</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/doktrin/operator-maximen</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/doktrin/drei-welten-modell</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/doktrin/frontier-firma</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/doktrin/b2b2a-paradigm</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/doktrin/agentic-network</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <!-- P1 · Epochen -->
+  <url><loc>https://opusmagnum.media/portfolio/epochen</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/epochen/operation</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/epochen/extension</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/epochen/network</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <!-- P2 · Netzwerk -->
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/prinzip</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/omm</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/lygox</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/master-x</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/sovereign-2030</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/netzwerk/familie</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <!-- P3 · Builds -->
+  <url><loc>https://opusmagnum.media/portfolio/builds</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/builds/agenticum-g5-orchestration</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/builds/agenticum-g5-genius</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/builds/perfect-twin-architecture</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- P4 · Anwerbung -->
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung/option-a</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung/option-b</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung/option-c</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung/option-d</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/anwerbung/option-e</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <!-- P5 · Compliance -->
+  <url><loc>https://opusmagnum.media/portfolio/compliance</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/compliance/eu-ai-act</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/compliance/gdpr</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/compliance/eu-data-act</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/compliance/decision-log</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- P6 · Columna -->
+  <url><loc>https://opusmagnum.media/portfolio/columna</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/columna/content-intelligence</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/columna/competitive-architecture</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/columna/apc-generator</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/columna/seo-aeo-geo</loc><lastmod>2026-04-19</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://opusmagnum.media/portfolio/columna/roadmap-2030</loc><lastmod>2026-04-19</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+</urlset>

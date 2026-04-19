@@ -1,0 +1,33 @@
+# robots.txt · OPUS MAGNUM MEDIA — Portfolio OS
+# EU AI Act Art. 50 Ready · Brand Protocol v3.0
+
+User-agent: *
+Allow: /
+
+# Generative Engines · B2B2A paradigm
+# Agent consumption welcome (B2B2A)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://opusmagnum.media/sitemap.xml

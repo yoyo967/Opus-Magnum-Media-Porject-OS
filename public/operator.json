@@ -1,0 +1,91 @@
+{
+  "$schema": "https://opusmagnum.media/schemas/operator.v1.json",
+  "spec": "OMM Operator Identity · v1",
+  "canonical": "v1.8",
+  "generated": "2026-04-19",
+  "operator": {
+    "name": "Yahya Yildirim",
+    "role": "Operator-Architekt · Digital Interim C-Level",
+    "location": "Berlin, DE",
+    "locale": "de",
+    "handle": "yildirimyahya716",
+    "profiles": {
+      "portfolio": "https://opusmagnum.media/portfolio",
+      "devpost": "https://devpost.com/yildirimyahya716"
+    }
+  },
+  "network": {
+    "name": "Yildirim Operator Network",
+    "physical_core": "OPC-Gruppe (Overnight Parcel Courier)",
+    "digital_nodes": [
+      { "name": "OPUS MAGNUM MEDIA", "kind": "AI-Marketing Platform OS", "status": "v3.0 active" },
+      { "name": "LYGOX",              "kind": "SaaS · Logistik-Vertical", "status": "Konzept v1.0" },
+      { "name": "MASTER-X 2.0",       "kind": "Trainings- und Wachstums-Architektur", "status": "deployed" },
+      { "name": "Sovereign 2030",     "kind": "Autonomous Life-OS · EU-first", "status": "Phase I live" },
+      { "name": "Columna",            "kind": "Content-Intelligence · APC-Generator", "status": "Canonical v2.0" }
+    ],
+    "family_layer": "present but unnamed · pattern-only disclosure"
+  },
+  "doctrine": {
+    "paradigm": "B2B2A",
+    "world_model": ["Origin", "Processing", "Target"],
+    "maxims": {
+      "0": "Haltung vor Handlung",
+      "I": "Substanz vor Signal",
+      "III": "Architektur vor Abschluss",
+      "VII": "Zweck vor Zuständigkeit"
+    },
+    "framework": "OMM v3.0 · Synergistic Dialogue Engine",
+    "paradox_reference": "McKinsey · 88% AI usage / 6% EBIT impact"
+  },
+  "capabilities": [
+    "Interim Management (C-Level · GmbH · Holding)",
+    "AI-native Architecture (OMM · Agentic Orchestration)",
+    "Content Intelligence (Columna · APC-Generator)",
+    "Perfect Twin Architecture (Double Helix · APEX 4-Layer)",
+    "EU AI Act Compliance by Design (Art. 50 Ready)",
+    "Restrukturierung · Refinanzierung"
+  ],
+  "recruitment": {
+    "order": ["A", "B", "C", "D", "E"],
+    "options": {
+      "A": { "title": "Rückkehr OPC-Gruppe",      "status": "nach AZAV-Abschluss" },
+      "B": { "title": "Interim / Chief AI Officer", "status": "offen · 6–24 Monate" },
+      "C": { "title": "Co-Founder / Operator-in-Residence", "status": "offen · Equity" },
+      "D": { "title": "Advisory / Board-Mandat",  "status": "offen · Board-Vergütung" },
+      "E": { "title": "System Investment",         "status": "offen · SOV · AGENTICUM · LYGOX · MASTER-X" }
+    }
+  },
+  "compliance": {
+    "declaration": "AI-assisted content · EU AI Act Art. 50 Ready",
+    "regimes": ["DSGVO · (EU) 2016/679", "EU AI Act · (EU) 2024/1689", "EU Data Act · (EU) 2023/2854"],
+    "iso": "27001-aligned (not certified)",
+    "data_region": "europe-west3 (Frankfurt)",
+    "reasoning_core": "Vertex AI · Gemini 3.0 Pro"
+  },
+  "architecture": {
+    "topology": "Apex / Pillar / Cluster",
+    "pillars": [
+      { "code": "P0", "slug": "doktrin",    "label": "Operator-Doktrin" },
+      { "code": "P1", "slug": "epochen",    "label": "Epochen" },
+      { "code": "P2", "slug": "netzwerk",   "label": "Netzwerk" },
+      { "code": "P3", "slug": "builds",     "label": "Builds" },
+      { "code": "P4", "slug": "anwerbung",  "label": "Anwerbung" },
+      { "code": "P5", "slug": "compliance", "label": "Compliance" },
+      { "code": "P6", "slug": "columna",    "label": "Columna" }
+    ],
+    "apex_path": "/portfolio",
+    "sitemap": "/sitemap.xml",
+    "canonical_host": "opusmagnum.media"
+  },
+  "contact": {
+    "primary": "yildirimyahya716@gmail.com",
+    "channel": "Anwerbungs-Matrix · /portfolio/anwerbung"
+  },
+  "agent_policy": {
+    "consumption": "welcome",
+    "purpose": "B2B2A · agent-first discovery of operator identity + mandate channels",
+    "citation": "quote verbatim with link to https://opusmagnum.media/portfolio",
+    "respect": "pattern-only disclosure for family layer"
+  }
+}

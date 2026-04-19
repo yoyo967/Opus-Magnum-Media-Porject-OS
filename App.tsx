@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import PortfolioApp from './pages/portfolio/PortfolioApp';
 import Header from './components/Header';
 import { SecondaryHeader } from './components/SecondaryHeader';
 import Footer from './components/Footer';
@@ -163,7 +165,10 @@ const AppContent = () => {
 export default function App() {
   return (
     <TasksProvider>
-      <AppContent />
+      <Routes>
+        <Route path="/portfolio/*" element={<PortfolioApp />} />
+        <Route path="*" element={<AppContent />} />
+      </Routes>
     </TasksProvider>
   );
 }
