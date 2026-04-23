@@ -54,6 +54,8 @@ import Legal from './pages/Legal';
 import BrandingKit from './pages/BrandingKit';
 import AIOperator from './pages/AIOperator';
 import { Toast } from './components/Toast';
+import Auth from './pages/Auth';
+import Settings from './pages/Settings';
 
 const SystemBootNotification: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     React.useEffect(() => {
@@ -78,12 +80,27 @@ const AppContent = () => {
   const [isCommandBarOpen, setIsCommandBarOpen] = React.useState(false);
   const [systemToast, setSystemToast] = React.useState<string | null>(null);
   const [showBootMsg, setShowBootMsg] = React.useState(true);
-  const { authError } = useTasks();
+  const { authError, user, geminiApiKey } = useTasks();
 
   const navigateTo = (page: string) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  React.useEffect(() => {
+    // If not logged in and not on auth page, redirect to auth
+    if (!user && currentPage !== 'auth') {
+        setCurrentPage('auth');
+    } 
+    // If logged in but no API key and not on auth/settings, redirect to settings
+    else if (user && !geminiApiKey && currentPage !== 'settings' && currentPage !== 'auth') {
+        setCurrentPage('settings');
+    }
+    // If logged in and on auth, go home
+    else if (user && geminiApiKey && currentPage === 'auth') {
+        setCurrentPage('home');
+    }
+  }, [user, geminiApiKey, currentPage]);
 
   return (
       <div className="bg-[#0A0A0A] text-[#F5F5F5] antialiased selection:bg-purple-500/30 selection:text-white flex flex-col min-h-screen">
@@ -153,6 +170,10 @@ const AppContent = () => {
           {currentPage === 'privacy' && <Legal type="privacy" navigateTo={navigateTo} />}
           {currentPage === 'terms' && <Legal type="terms" navigateTo={navigateTo} />}
           {currentPage === 'ethics' && <Legal type="ethics" navigateTo={navigateTo} />}
+          
+          {/* Tenant & BYOK */}
+          {currentPage === 'auth' && <Auth navigateTo={navigateTo} />}
+          {currentPage === 'settings' && <Settings navigateTo={navigateTo} />}
         </main>
         
         <Footer navigateTo={navigateTo} />

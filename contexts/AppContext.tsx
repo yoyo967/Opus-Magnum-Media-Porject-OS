@@ -2,9 +2,14 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { MASTERPLAN_HIERARCHY, MasterplanNode } from '../masterplanData';
-import { db, auth, googleProvider } from '../firebase';
-import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { collection, addDoc, updateDoc, doc, onSnapshot, query, where, setDoc } from 'firebase/firestore';
+
+// --- INTERFACES ---
+export interface User {
+    uid: string;
+    email: string;
+    displayName?: string;
+    token?: string;
+}
 
 // --- INTERFACES ---
 export interface ChatMessage {
@@ -206,8 +211,11 @@ export const COST_TABLE = {
 
 interface TasksContextType {
     user: User | null;
-    login: () => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
+    register: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    geminiApiKey: string | null;
+    setGeminiApiKey: (key: string) => void;
     authError: string | null;
     dismissAuthError: () => void;
     enableOfflineMode: () => void;
@@ -320,6 +328,7 @@ const initialDocuments: Document[] = [
 
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
     const [isOfflineMode, setIsOfflineMode] = useState(false);
 
@@ -351,17 +360,13 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const maxCredits = 1000;
 
     // AUTHENTICATION LISTENERS
+    // Replaced Firebase with local storage for now until backend is connected
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-                console.log("User signed in:", currentUser.email);
-                addSystemLog(`User logged in: ${currentUser.email}`, "System", "success");
-                setAuthError(null);
-                setIsOfflineMode(false);
-            }
-        });
-        return () => unsubscribe();
+        const storedUser = window.localStorage.getItem('opus_localUser');
+        if (storedUser) {
+            const u = JSON.parse(storedUser);
+            setUser(u);
+        }
     }, []);
 
     // DATA PERSISTENCE: LOAD
@@ -389,10 +394,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             load('opus_campaignBrief', setCampaignBrief, null);
             load('opus_strategyBrief', setStrategyBrief, null);
             load('opus_credits', setCredits, 500);
+            load('opus_geminiApiKey', setGeminiApiKey, null);
         }
     }, [user, isOfflineMode]);
 
     // DATA PERSISTENCE: SAVE LOCAL
+    useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_geminiApiKey', JSON.stringify(geminiApiKey)); }, [geminiApiKey, user, isOfflineMode]);
     useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_tasks', JSON.stringify(tasks)); }, [tasks, user, isOfflineMode]);
     useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_documents', JSON.stringify(documents)); }, [documents, user, isOfflineMode]);
     useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_personas', JSON.stringify(personas)); }, [personas, user, isOfflineMode]);
@@ -409,19 +416,58 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_credits', JSON.stringify(credits)); }, [credits, user, isOfflineMode]);
 
 
-    const login = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+    const login = async (email: string, password: string) => {
         setAuthError(null);
         try {
-            await signInWithPopup(auth, googleProvider);
+            const res = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.detail || "Login failed");
+            
+            const u = { uid: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
+            setUser(u);
+            window.localStorage.setItem('opus_localUser', JSON.stringify(u));
+            addSystemLog(`User logged in: ${email}`, "System", "success");
         } catch (error: any) {
             console.error("Login failed", error);
-            setAuthError("Login failed");
+            setAuthError(error.message || "Login failed");
+            throw error;
+        }
+    };
+
+    const register = async (email: string, password: string) => {
+        setAuthError(null);
+        try {
+            const res = await fetch(`${API_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.detail || "Registration failed");
+            
+            const u = { uid: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
+            setUser(u);
+            window.localStorage.setItem('opus_localUser', JSON.stringify(u));
+            addSystemLog(`New tenant initialized: ${email}`, "System", "success");
+        } catch (error: any) {
+            console.error("Registration failed", error);
+            setAuthError(error.message || "Registration failed");
+            throw error;
         }
     };
 
     const logout = async () => {
         try {
-            await signOut(auth);
+            setUser(null);
+            window.localStorage.removeItem('opus_localUser');
             setAuthError(null);
         } catch (error) {
             console.error("Logout failed", error);
@@ -536,7 +582,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const imagePart = task.imageUrl ? { inlineData: { mimeType: 'image/jpeg', data: task.imageUrl.split(',')[1] } } : null;
         const prompt = `Analyze the visual asset. Respond in English.`;
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            if (!geminiApiKey) throw new Error("Gemini API Key missing. Please provide it in Settings.");
+            const ai = new GoogleGenAI({ apiKey: geminiApiKey });
             const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt, config: { responseMimeType: "application/json", responseSchema: assetSchema } });
             const assetMetadata = JSON.parse(response.text);
             updateTask(taskId, { assetMetadata });
@@ -550,7 +597,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const performanceSchema = { type: Type.OBJECT, properties: { impressions: { type: Type.INTEGER }, engagementRate: { type: Type.NUMBER }, clicks: { type: Type.INTEGER }, conversions: { type: Type.INTEGER } } };
         const prompt = `Simulate performance data for this published marketing asset.`;
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            if (!geminiApiKey) throw new Error("Gemini API Key missing. Please provide it in Settings.");
+            const ai = new GoogleGenAI({ apiKey: geminiApiKey });
             const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt, config: { responseMimeType: "application/json", responseSchema: performanceSchema } });
             const performanceData = JSON.parse(response.text);
             updateTask(taskId, { publishedAt: new Date().toISOString(), performanceData });
@@ -656,7 +704,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     return (
         <TasksContext.Provider value={{ 
-            user, login, logout, authError, dismissAuthError, enableOfflineMode, isOfflineMode, 
+            user, login, register, logout, geminiApiKey, setGeminiApiKey, authError, dismissAuthError, enableOfflineMode, isOfflineMode, 
             tasks, addTask, addMultipleTasks, setTasks, updateTask, publishAndAnalyzeTask, 
             strategyBrief, setStrategyBrief, campaignBrief, setCampaignBrief, toolInput, setToolInput, 
             optimizationContext, setOptimizationContext, documents, addDocument, indexTaskAsset, 

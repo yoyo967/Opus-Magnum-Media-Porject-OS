@@ -191,12 +191,17 @@ const Header: React.FC<HeaderProps> = ({ navigateTo, currentPage, onOpenCommandB
             )}
             
             {user ? (
-              <button onClick={logout} className="text-xs text-red-400 border border-red-500/30 px-3 py-1.5 rounded-full hover:bg-red-900/20">
-                Logout
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => navigateTo('settings')} className="text-xs text-white border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors">
+                  Settings
+                </button>
+                <button onClick={logout} className="text-xs text-red-400 border border-red-500/30 px-3 py-1.5 rounded-full hover:bg-red-900/20 transition-colors">
+                  Logout
+                </button>
+              </div>
             ) : (
-              <button onClick={login} className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-full hover:bg-green-900/20">
-                Login
+              <button onClick={() => navigateTo('auth')} className="text-xs text-green-400 border border-green-500/30 px-3 py-1.5 rounded-full hover:bg-green-900/20 transition-colors">
+                Initialize Access
               </button>
             )}
 
