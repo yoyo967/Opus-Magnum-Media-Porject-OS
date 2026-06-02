@@ -29,7 +29,7 @@ app.add_middleware(
 
 # Database
 try:
-    db = firestore.Client(project="opus-magnum-ai")
+    db = firestore.Client(project="studio-4188712377-b3681", database="opus-eu")
 except Exception as e:
     # Fallback if no local credentials, useful for local testing without key
     print("Warning: Firestore client could not be initialized (No credentials found).", e)
@@ -92,6 +92,16 @@ class AuthRequest(BaseModel):
     email: str
     password: str
 
+class LeadRequest(BaseModel):
+    name: str
+    email: str
+    brand: str
+    website: str | None = None
+    ad_spend: str | None = None
+    message: str
+    consent: bool
+    company_website: str | None = None # Honeypot
+
 @app.get("/health")
 def health_check():
     return {"status": "operational", "system": "OPUS MAGNUM AI"}
@@ -102,6 +112,44 @@ def get_shared_key(email: str = Depends(get_current_user_email)):
     if not shared_key:
         raise HTTPException(status_code=404, detail="Shared Gemini API Key not configured on this environment")
     return {"geminiApiKey": shared_key}
+
+@app.post("/api/lead")
+def create_lead(request: LeadRequest):
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    
+    # 1. Honeypot check
+    if request.company_website and request.company_website.strip() != "":
+        # Silently absorb spam (fail-safe/spam-sink)
+        print("Honeypot triggered! Spam lead ignored.")
+        return {"status": "success", "message": "Lead submitted successfully (spam-sink)"}
+        
+    # 2. Validation
+    if not request.name.strip() or not request.email.strip() or not request.message.strip():
+        raise HTTPException(status_code=400, detail="Name, Email, and Message are required fields")
+        
+    if not request.consent:
+        raise HTTPException(status_code=400, detail="Privacy policy consent is required")
+        
+    # 3. Write to Firestore tenants/mirrou/leads/
+    try:
+        leads_ref = db.collection('tenants').document('mirrou').collection('leads')
+        lead_data = {
+            "name": request.name.strip(),
+            "email": request.email.lower().strip(),
+            "brand": request.brand.strip() if request.brand else "",
+            "website": request.website.strip() if request.website else "",
+            "ad_spend": request.ad_spend,
+            "message": request.message.strip(),
+            "consent": request.consent,
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "status": "new"
+        }
+        leads_ref.add(lead_data)
+        return {"status": "success", "message": "Lead submitted successfully"}
+    except Exception as e:
+        print("Error saving lead to Firestore:", e)
+        raise HTTPException(status_code=500, detail="Failed to save lead database entry")
 
 @app.post("/api/auth/login")
 def login(request: AuthRequest):

@@ -3,6 +3,7 @@ import { getGeminiClient } from '@/utils/geminiClient';
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toast } from './Toast';
+import { MIRROU_TOOL_PROMPTS } from '../tenants/mirrou/prompts';
 
 // --- ICONS ---
 const CheckIcon: React.FC = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -138,6 +139,7 @@ const CtaSection: React.FC<{ section: PageSection; theme: Theme }> = ({ section,
 
 
 export const BaumeisterTool: React.FC = () => {
+    const [activeMode, setActiveMode] = useState<'brief-engine' | 'page-builder'>('brief-engine');
     const [description, setDescription] = useState('Eine Landing Page für ein neues KI-gestütztes Headless CMS namens "Quantum". Zielgruppe sind Entwickler und Content Manager. USP: extreme Geschwindigkeit und nahtlose Integration in Framer & n8n.');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -150,6 +152,102 @@ export const BaumeisterTool: React.FC = () => {
     const [generatedCode, setGeneratedCode] = useState('');
     const [isGeneratingCode, setIsGeneratingCode] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+    // Creative Brief Engine State
+    const [briefBrand, setBriefBrand] = useState('LumiSkin Berlin');
+    const [briefGoal, setBriefGoal] = useState('Launch eines biolumineszenten Serum-Visual-Systems im DACH-Raum für die Zielgruppe 25-40.');
+    const [briefBudget, setBriefBudget] = useState('10-30k');
+    const [briefAiLevel, setBriefAiLevel] = useState('AI-Assisted');
+    const [briefData, setBriefData] = useState<any | null>(null);
+    const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
+
+    const briefSchema = {
+        type: Type.OBJECT,
+        properties: {
+            brand_name: { type: Type.STRING },
+            campaign_goal: { type: Type.STRING },
+            target_audience: { type: Type.STRING },
+            stages: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        stage: { type: Type.STRING },
+                        description: { type: Type.STRING }
+                    }
+                }
+            },
+            hooks: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        hook_type: { type: Type.STRING },
+                        visual_idea: { type: Type.STRING },
+                        copy_text: { type: Type.STRING },
+                        rationale: { type: Type.STRING }
+                    }
+                }
+            },
+            formats: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        channel: { type: Type.STRING },
+                        specs: { type: Type.STRING }
+                    }
+                }
+            },
+            ai_level: {
+                type: Type.OBJECT,
+                properties: {
+                    level: { type: Type.STRING },
+                    rationale: { type: Type.STRING }
+                }
+            },
+            compliance_check: {
+                type: Type.OBJECT,
+                properties: {
+                    hcvo_risk: { type: Type.STRING },
+                    ai_act_required_badges: { type: Type.ARRAY, items: { type: Type.STRING } }
+                }
+            }
+        }
+    };
+
+    const handleGenerateBrief = async () => {
+        setIsGeneratingBrief(true);
+        setError(null);
+        setBriefData(null);
+
+        const prompt = `Du bist die Creative Brief Engine von Mirrou.
+        Erstelle ein detailliertes Creative Briefing auf Deutsch basierend auf:
+        - Marke: ${briefBrand}
+        - Kampagnen-Ziel: ${briefGoal}
+        - Werbebudget: ${briefBudget}
+        - KI-Einsatz-Ebene: ${briefAiLevel}
+
+        System-Instruktion:
+        ${MIRROU_TOOL_PROMPTS.baumeister}
+
+        Befolge alle Design- und Strukturrichtlinien. Antworte ausschließlich mit dem JSON-Schema.`;
+
+        try {
+            const ai = getGeminiClient();
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-pro',
+                contents: prompt,
+                config: { responseMimeType: 'application/json', responseSchema: briefSchema }
+            });
+            setBriefData(JSON.parse(response.text));
+        } catch (e) {
+            console.error(e);
+            setError("Creative Briefing konnte nicht generiert werden.");
+        } finally {
+            setIsGeneratingBrief(false);
+        }
+    };
 
     const pageSchema = {
         type: Type.OBJECT,
@@ -250,93 +348,311 @@ export const BaumeisterTool: React.FC = () => {
         <>
             {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
             <div className="space-y-8">
-                <div className="bg-[#1C1C1C] rounded-lg border border-[#333333] p-6 max-w-4xl mx-auto space-y-4">
-                    <div>
-                        <label className="text-sm font-medium text-gray-300 block mb-2">Seitenbeschreibung</label>
-                        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded-md border border-[#333333] text-sm" />
+                {/* Mode Selector */}
+                <div className="flex justify-center">
+                    <div className="bg-[#1C1C1C] p-1.5 rounded-full border border-[#333333] flex gap-1">
+                        <button
+                            onClick={() => setActiveMode('brief-engine')}
+                            className={`px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${activeMode === 'brief-engine' ? 'bg-[#C8A25A] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            Creative Brief Engine
+                        </button>
+                        <button
+                            onClick={() => setActiveMode('page-builder')}
+                            className={`px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${activeMode === 'page-builder' ? 'bg-[#C8A25A] text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            Landing Page Architect
+                        </button>
                     </div>
-                    <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-white text-black py-2.5 rounded-full font-medium text-sm disabled:opacity-50">
-                        {isLoading ? 'Entwirft...' : 'Landing Page entwerfen'}
-                    </button>
                 </div>
 
-                <div className="bg-[#1C1C1C] rounded-lg border border-[#333333] shadow-2xl max-w-6xl mx-auto relative overflow-hidden">
-                    {/* Toolbar */}
-                    <div className="bg-black/50 rounded-t-lg p-3 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="flex gap-1.5 mr-2"><span className="w-2.5 h-2.5 rounded-full bg-red-500"></span><span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span><span className="w-2.5 h-2.5 rounded-full bg-green-500"></span></div>
-                            <div className="flex items-center bg-[#0A0A0A] rounded-md border border-white/10 p-1 gap-1">
-                                <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded transition-colors ${viewMode === 'desktop' ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`} title="Desktop Ansicht"><ComputerDesktopIcon /></button>
-                                <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded transition-colors ${viewMode === 'mobile' ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`} title="Mobile Ansicht"><DevicePhoneMobileIcon /></button>
+                {activeMode === 'brief-engine' ? (
+                    /* Creative Brief Engine UI */
+                    <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-start font-sans text-white">
+                        {/* Input Panel */}
+                        <div className="bg-[#1C1C1C] rounded-lg border border-[#333333] p-6 space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium text-white mb-1 border-b border-[#333333] pb-2">Briefing Inputs</h3>
+                                <p className="text-xs text-gray-400">Geben Sie die Parameter für die Kampagne ein.</p>
                             </div>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-medium text-gray-300 block mb-1.5 uppercase tracking-wider">Markenname</label>
+                                    <input 
+                                        type="text"
+                                        value={briefBrand} 
+                                        onChange={e => setBriefBrand(e.target.value)} 
+                                        className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded border border-[#333333] text-sm focus:border-[#C8A25A] focus:outline-none" 
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="text-xs font-medium text-gray-300 block mb-1.5 uppercase tracking-wider">Kampagnen-Ziel & Zielgruppe</label>
+                                    <textarea 
+                                        value={briefGoal} 
+                                        onChange={e => setBriefGoal(e.target.value)} 
+                                        rows={4}
+                                        className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded border border-[#333333] text-sm focus:border-[#C8A25A] focus:outline-none resize-none" 
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-300 block mb-1.5 uppercase tracking-wider">Werbebudget</label>
+                                        <select 
+                                            value={briefBudget}
+                                            onChange={e => setBriefBudget(e.target.value)}
+                                            className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded border border-[#333333] text-sm focus:border-[#C8A25A] focus:outline-none"
+                                        >
+                                            <option value="10-30k">10k - 30k €</option>
+                                            <option value="30-100k">30k - 100k €</option>
+                                            <option value="100-250k">100k - 250k €</option>
+                                            <option value="250k+">250k+ €</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-300 block mb-1.5 uppercase tracking-wider">KI-Ebene</label>
+                                        <select 
+                                            value={briefAiLevel}
+                                            onChange={e => setBriefAiLevel(e.target.value)}
+                                            className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded border border-[#333333] text-sm focus:border-[#C8A25A] focus:outline-none"
+                                        >
+                                            <option value="Pure AI">Pure AI</option>
+                                            <option value="AI-Assisted">AI-Assisted</option>
+                                            <option value="Human-Crafted">Human-Crafted</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={handleGenerateBrief} 
+                                disabled={isGeneratingBrief} 
+                                className="w-full bg-[#C8A25A] text-black py-2.5 rounded font-bold text-xs uppercase tracking-widest hover:bg-[#D4B370] transition-colors disabled:opacity-50"
+                            >
+                                {isGeneratingBrief ? 'Generiere Brief...' : 'Briefing generieren'}
+                            </button>
+                            
+                            {error && <p className="text-xs text-red-400 mt-2 text-center">{error}</p>}
                         </div>
 
-                        <div className="flex items-center gap-4">
-                             <div className="flex items-center bg-[#0A0A0A] rounded-md border border-white/10 p-1 gap-1">
-                                <span className="text-[10px] text-gray-500 px-2 flex items-center gap-1"><PaintBrushIcon /> Theme:</span>
-                                {(['modern', 'minimal', 'brutalist'] as Theme[]).map(t => (
-                                    <button key={t} onClick={() => setTheme(t)} className={`px-2 py-1 text-xs rounded transition-colors capitalize ${theme === t ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
-                                        {t}
-                                    </button>
-                                ))}
-                            </div>
+                        {/* Output Panel / Canvas */}
+                        <div className="lg:col-span-2 bg-[#1C1C1C] rounded-lg border border-[#333333] p-6 min-h-[500px]">
+                            {isGeneratingBrief ? (
+                                <div className="h-full min-h-[400px] flex flex-col items-center justify-center space-y-4">
+                                    <div className="w-10 h-10 border-2 border-[#C8A25A] border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="text-xs text-gray-400 uppercase tracking-widest">Generiere D2C Creative Brief mit Gemini...</p>
+                                </div>
+                            ) : briefData ? (
+                                <div className="space-y-8 animate-[fadeIn_0.4s_ease-out]">
+                                    {/* Header & Meta */}
+                                    <div className="border-b border-[#333333] pb-6">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <span className="text-[10px] bg-[#C8A25A]/10 text-[#C8A25A] border border-[#C8A25A]/20 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">Mirrou Creative Brief</span>
+                                                <h2 className="text-2xl font-bold text-white mt-2">{briefData.brand_name}</h2>
+                                                <p className="text-xs text-gray-400 mt-1"><span className="text-gray-500">Zielgruppe:</span> {briefData.target_audience}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[10px] text-gray-500 block uppercase tracking-wider">AI Integration Level</span>
+                                                <span className="text-sm font-semibold text-[#F2EFE9]">{briefData.ai_level?.level}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 bg-[#0A0A0A] border border-[#222222] p-4 rounded text-sm text-gray-300">
+                                            <span className="text-xs text-gray-500 block mb-1 uppercase tracking-wider font-semibold">Kampagnen-Ziel:</span>
+                                            {briefData.campaign_goal}
+                                        </div>
+                                    </div>
 
-                            <button onClick={handleGenerateCode} disabled={!pageStructure} className="flex items-center gap-2 text-xs bg-purple-600/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded hover:bg-purple-600/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                <CodeBracketIcon />
-                                <span className="hidden sm:inline">Code Export</span>
+                                    {/* Hook Hypotheses */}
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-[#C8A25A] uppercase tracking-widest mb-4 border-l-2 border-[#C8A25A] pl-2 font-mono">1. Hook-Hypothesen</h4>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            {briefData.hooks?.map((hook: any, idx: number) => (
+                                                <div key={idx} className="bg-[#0A0A0A] border border-[#333333] rounded p-4 space-y-3 hover:border-[#C8A25A]/40 transition-colors">
+                                                    <div className="flex justify-between items-center border-b border-[#222222] pb-2">
+                                                        <span className="text-xs font-bold text-[#F2EFE9]">{hook.hook_type}</span>
+                                                        <span className="text-[10px] text-gray-500">Hook #{idx+1}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[9px] text-gray-500 block uppercase tracking-wider">Visual Idea</span>
+                                                        <p className="text-xs text-gray-300 mt-0.5">{hook.visual_idea}</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[9px] text-gray-500 block uppercase tracking-wider">Copy Text</span>
+                                                        <p className="text-xs text-[#F2EFE9] font-serif italic mt-0.5">"{hook.copy_text}"</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[9px] text-gray-500 block uppercase tracking-wider">Rationale</span>
+                                                        <p className="text-[11px] text-gray-400 mt-0.5">{hook.rationale}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Execution Stages */}
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-[#C8A25A] uppercase tracking-widest mb-4 border-l-2 border-[#C8A25A] pl-2 font-mono">2. Execution Stages</h4>
+                                        <div className="relative pl-6 border-l border-[#333333] space-y-6">
+                                            {briefData.stages?.map((stage: any, idx: number) => (
+                                                <div key={idx} className="relative">
+                                                    <span className="absolute -left-[35px] top-0 w-[18px] h-[18px] rounded-full bg-[#0A0A0A] border border-[#C8A25A] flex items-center justify-center text-[9px] font-bold text-[#C8A25A]">
+                                                        {idx + 1}
+                                                    </span>
+                                                    <h5 className="text-xs font-bold text-white">{stage.stage}</h5>
+                                                    <p className="text-xs text-gray-400 mt-1">{stage.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Formats & AI Level */}
+                                    <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-[#333333]">
+                                        <div>
+                                            <h4 className="text-xs font-semibold text-[#C8A25A] uppercase tracking-widest mb-3 font-mono">3. Format Specs</h4>
+                                            <div className="space-y-2">
+                                                {briefData.formats?.map((format: any, idx: number) => (
+                                                    <div key={idx} className="flex justify-between items-center bg-[#0A0A0A] border border-[#222222] px-3 py-2 rounded text-xs">
+                                                        <span className="font-bold text-[#F2EFE9]">{format.channel}</span>
+                                                        <span className="text-gray-400">{format.specs}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-xs font-semibold text-[#C8A25A] uppercase tracking-widest mb-3 font-mono">4. AI Rationale & Level</h4>
+                                            <div className="bg-[#0A0A0A] border border-[#222222] p-4 rounded text-xs space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-400">Empfohlenes Level:</span>
+                                                    <span className="font-bold text-white">{briefData.ai_level?.level}</span>
+                                                </div>
+                                                <p className="text-gray-400 leading-relaxed">{briefData.ai_level?.rationale}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Compliance Check Card */}
+                                    <div className="bg-yellow-950/20 border border-yellow-800/40 rounded p-4 space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-yellow-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                                            <h4 className="text-xs font-bold text-yellow-500 uppercase tracking-wider font-mono">HCVO & AI Act Pre-Check</h4>
+                                        </div>
+                                        <div className="text-xs space-y-2">
+                                            <p className="text-gray-300"><span className="text-yellow-600 font-semibold">Erkannte HCVO-Risiken:</span> {briefData.compliance_check?.hcvo_risk}</p>
+                                            <div className="flex flex-wrap gap-2 items-center mt-2">
+                                                <span className="text-[10px] text-gray-500">Erforderliche Badges (EU AI Act):</span>
+                                                {briefData.compliance_check?.ai_act_required_badges?.map((badge: string, idx: number) => (
+                                                    <span key={idx} className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded font-mono text-[9px] uppercase">{badge}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-6 font-sans text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-gray-600 mb-3"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                                    <h4 className="text-sm font-semibold text-white">Kein Briefing geladen</h4>
+                                    <p className="text-xs text-gray-500 mt-1 max-w-sm">Geben Sie links die Details ein und klicken Sie auf "Briefing generieren".</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    /* Page Builder UI (Original) */
+                    <>
+                        <div className="bg-[#1C1C1C] rounded-lg border border-[#333333] p-6 max-w-4xl mx-auto space-y-4 font-sans text-white">
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">Seitenbeschreibung</label>
+                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full bg-[#0A0A0A] text-white px-3 py-2 rounded-md border border-[#333333] text-sm" />
+                            </div>
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-white text-black py-2.5 rounded-full font-medium text-sm disabled:opacity-50 font-sans">
+                                {isLoading ? 'Entwirft...' : 'Landing Page entwerfen'}
                             </button>
                         </div>
-                    </div>
-                    
-                    {/* Canvas */}
-                    <div className="bg-[#0A0A0A] rounded-b-lg overflow-hidden min-h-[400px] flex justify-center p-4 md:p-8 bg-grid-pattern">
-                        {isLoading && <div className="w-full max-w-4xl"><SkeletonLoader /></div>}
-                        {error && <p className="text-center text-red-400">{error}</p>}
-                        
-                        {!isLoading && !error && pageStructure && (
-                            <div 
-                                className={`shadow-2xl transition-all duration-500 ease-in-out origin-top overflow-hidden ${viewMode === 'mobile' ? 'w-[375px] rounded-3xl border-4 border-[#333]' : 'w-full rounded-lg border border-white/5'} ${getThemeStyles(theme).container}`}
-                            >
-                                <div className={`overflow-y-auto h-full max-h-[800px] scrollbar-hide ${viewMode === 'mobile' ? 'rounded-[20px]' : ''}`}>
-                                    <div className="page-fade-in">
-                                        {pageStructure.sections.map((section, i) => {
-                                            switch (section.type) {
-                                                case 'hero': return <HeroSection key={i} section={section} theme={theme} />;
-                                                case 'features': return <FeaturesSection key={i} section={section} theme={theme} />;
-                                                case 'testimonial': return <TestimonialSection key={i} section={section} theme={theme} />;
-                                                case 'cta': return <CtaSection key={i} section={section} theme={theme} />;
-                                                default: return null;
-                                            }
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Code Overlay */}
-                    {showCode && (
-                        <div className="absolute inset-0 bg-[#0A0A0A]/95 backdrop-blur-xl z-50 flex flex-col p-6 animate-[fadeIn_0.2s_ease-out]">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-mono text-purple-400">SOURCE_CODE.tsx</h3>
-                                <div className="flex gap-4">
-                                    <button onClick={handleCopyCode} className="text-xs text-white hover:text-purple-400">Kopieren</button>
-                                    <button onClick={() => setShowCode(false)} className="text-gray-400 hover:text-white"><XMarkIcon /></button>
+                        <div className="bg-[#1C1C1C] rounded-lg border border-[#333333] shadow-2xl max-w-6xl mx-auto relative overflow-hidden font-sans text-white">
+                            {/* Toolbar */}
+                            <div className="bg-black/50 rounded-t-lg p-3 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex gap-1.5 mr-2"><span className="w-2.5 h-2.5 rounded-full bg-red-500"></span><span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span><span className="w-2.5 h-2.5 rounded-full bg-green-500"></span></div>
+                                    <div className="flex items-center bg-[#0A0A0A] rounded-md border border-white/10 p-1 gap-1">
+                                        <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded transition-colors ${viewMode === 'desktop' ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`} title="Desktop Ansicht"><ComputerDesktopIcon /></button>
+                                        <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded transition-colors ${viewMode === 'mobile' ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`} title="Mobile Ansicht"><DevicePhoneMobileIcon /></button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                     <div className="flex items-center bg-[#0A0A0A] rounded-md border border-white/10 p-1 gap-1">
+                                        <span className="text-[10px] text-gray-500 px-2 flex items-center gap-1 font-sans"><PaintBrushIcon /> Theme:</span>
+                                        {(['modern', 'minimal', 'brutalist'] as Theme[]).map(t => (
+                                            <button key={t} onClick={() => setTheme(t)} className={`px-2 py-1 text-xs rounded transition-colors capitalize font-sans ${theme === t ? 'bg-white/20 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button onClick={handleGenerateCode} disabled={!pageStructure} className="flex items-center gap-2 text-xs bg-purple-600/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded hover:bg-purple-600/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed font-sans">
+                                        <CodeBracketIcon />
+                                        <span className="hidden sm:inline">Code Export</span>
+                                    </button>
                                 </div>
                             </div>
-                            <div className="flex-1 bg-[#111] rounded-lg border border-white/10 p-4 overflow-auto font-mono text-xs text-gray-300 relative">
-                                {isGeneratingCode ? (
-                                    <div className="absolute inset-0 flex items-center justify-center flex-col gap-2">
-                                        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                                        <p className="text-gray-500">Kompiliere {theme.toUpperCase()} React-Komponente mit Gemini 3.0...</p>
+                            
+                            {/* Canvas */}
+                            <div className="bg-[#0A0A0A] rounded-b-lg overflow-hidden min-h-[400px] flex justify-center p-4 md:p-8 bg-grid-pattern">
+                                {isLoading && <div className="w-full max-w-4xl"><SkeletonLoader /></div>}
+                                {error && <p className="text-center text-red-400 font-sans">{error}</p>}
+                                
+                                {!isLoading && !error && pageStructure && (
+                                    <div 
+                                        className={`shadow-2xl transition-all duration-500 ease-in-out origin-top overflow-hidden ${viewMode === 'mobile' ? 'w-[375px] rounded-3xl border-4 border-[#333]' : 'w-full rounded-lg border border-white/5'} ${getThemeStyles(theme).container}`}
+                                    >
+                                        <div className={`overflow-y-auto h-full max-h-[800px] scrollbar-hide ${viewMode === 'mobile' ? 'rounded-[20px]' : ''}`}>
+                                            <div className="page-fade-in">
+                                                {pageStructure.sections.map((section, i) => {
+                                                    switch (section.type) {
+                                                        case 'hero': return <HeroSection key={i} section={section} theme={theme} />;
+                                                        case 'features': return <FeaturesSection key={i} section={section} theme={theme} />;
+                                                        case 'testimonial': return <TestimonialSection key={i} section={section} theme={theme} />;
+                                                        case 'cta': return <CtaSection key={i} section={section} theme={theme} />;
+                                                        default: return null;
+                                                    }
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <pre>{generatedCode}</pre>
                                 )}
                             </div>
+
+                            {/* Code Overlay */}
+                            {showCode && (
+                                <div className="absolute inset-0 bg-[#0A0A0A]/95 backdrop-blur-xl z-50 flex flex-col p-6 animate-[fadeIn_0.2s_ease-out] font-sans">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-mono text-purple-400">SOURCE_CODE.tsx</h3>
+                                        <div className="flex gap-4">
+                                            <button onClick={handleCopyCode} className="text-xs text-white hover:text-purple-400 font-sans">Kopieren</button>
+                                            <button onClick={() => setShowCode(false)} className="text-gray-400 hover:text-white"><XMarkIcon /></button>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 bg-[#111] rounded-lg border border-white/10 p-4 overflow-auto font-mono text-xs text-gray-300 relative">
+                                        {isGeneratingCode ? (
+                                            <div className="absolute inset-0 flex items-center justify-center flex-col gap-2">
+                                                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                                <p className="text-gray-500">Kompiliere {theme.toUpperCase()} React-Komponente mit Gemini...</p>
+                                            </div>
+                                        ) : (
+                                            <pre>{generatedCode}</pre>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
             </div>
         </>
     );
