@@ -1,4 +1,4 @@
-import { getGeminiClient } from '@/utils/geminiClient';
+import { getGeminiClient, mapGeminiError } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -58,7 +58,7 @@ export const PersonaTool: React.FC<{ navigateTo: (page: string) => void }> = ({ 
 
         } catch (e) {
             console.error("Fehler bei der Persona-Generierung:", e);
-            setError("Persona konnte nicht generiert werden.");
+            setError(mapGeminiError(e));
         } finally {
             setIsLoading(false);
         }

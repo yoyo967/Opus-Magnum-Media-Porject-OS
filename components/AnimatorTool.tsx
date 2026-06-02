@@ -1,4 +1,4 @@
-import { getGeminiClient, getGeminiApiKey } from '@/utils/geminiClient';
+import { getGeminiClient, getGeminiApiKey, mapGeminiError } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -159,7 +159,7 @@ export const AnimatorTool: React.FC<AnimatorToolProps> = ({ navigateTo }) => {
         } catch (e: any) {
             console.error("Video generation error:", e);
             setStatus('error');
-            setError(e.message || "An unknown error occurred.");
+            setError(mapGeminiError(e));
         }
     };
 

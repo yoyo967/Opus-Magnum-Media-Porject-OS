@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Opus Magnum Media — produktionsreife Firestore-Regeln.
+// HINWEIS: Firestore ist im Client noch NICHT verdrahtet (App nutzt aktuell
+// localStorage + Mock-Auth). Diese Regeln greifen, sobald die Firebase-Integration
+// (P1.4 / Auth) erfolgt ist. Default = deny; Zugriff nur explizit gewährt.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Mitglied eines Tenants? (Multi-Tenant, P2.4)
+    function isTenantMember(tid) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/tenants/$(tid)/members/$(request.auth.uid));
+    }
+
+    // --- Private Nutzerdaten: nur der Eigentümer (BYOK-Key, Tasks, Docs, Logs ...) ---
+    match /users/{uid}/{document=**} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // --- Tenant-Workspace: nur authentifizierte Mitglieder dieses Tenants ---
+    match /tenants/{tid} {
+      allow read: if isTenantMember(tid);
+
+      // Mitgliedschaften werden serverseitig (Admin SDK) verwaltet, nie vom Client
+      match /members/{uid} {
+        allow read:  if isTenantMember(tid);
+        allow write: if false;
+      }
+
+      // Projekte, Briefs & alle weiteren Tenant-Dokumente
+      match /{document=**} {
+        allow read, write: if isTenantMember(tid);
+      }
+    }
+
+    // --- Alles andere: explizit verboten ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
