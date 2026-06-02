@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_TOOL_PROMPTS } from '@/tenants';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -88,14 +89,14 @@ export const MarkenwaechterTool: React.FC = () => {
             if (activeTab === 'textCheck' && checkText) {
                 prompt += `\nText: "${checkText}"`;
                 // Upgraded to Gemini 3.0 for stricter compliance checking
-                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
+                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { systemInstruction: MIRROU_TOOL_PROMPTS.markenwaechter } });
             } else if (activeTab === 'imageCheck' && checkImage) {
                 prompt += "\nImage is attached.";
                 const base64Data = await blobToBase64(checkImage.file);
                 const imagePart = { inlineData: { mimeType: checkImage.file.type, data: base64Data } };
                 const textPart = { text: prompt };
                 // Upgraded to Gemini 3.0 for multimodal checking
-                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: { parts: [imagePart, textPart] } });
+                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: { parts: [imagePart, textPart] }, config: { systemInstruction: MIRROU_TOOL_PROMPTS.markenwaechter } });
             } else {
                 setCheckResult("Kein Inhalt zum Überprüfen vorhanden.");
                 setIsChecking(false);

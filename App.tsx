@@ -59,6 +59,7 @@ const BrandingKit = React.lazy(() => import('./pages/BrandingKit'));
 const AIOperator = React.lazy(() => import('./pages/AIOperator'));
 const Auth = React.lazy(() => import('./pages/Auth'));
 const Settings = React.lazy(() => import('./pages/Settings'));
+const MirrouBenchmarks = React.lazy(() => import('./pages/MirrouBenchmarks'));
 
 const SystemBootNotification: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     React.useEffect(() => {
@@ -169,6 +170,7 @@ const AppContent = () => {
           {currentPage === 'grantbook' && <GrantBook navigateTo={navigateTo} onComplete={() => setIsSecretMode(true)} />}
           {currentPage === 'brandingkit' && <BrandingKit navigateTo={navigateTo} />}
           {currentPage === 'aioperator' && <AIOperator navigateTo={navigateTo} />}
+          {currentPage === 'mirroubenchmarks' && <MirrouBenchmarks navigateTo={navigateTo} />}
           {/* Legal Pages */}
           {currentPage === 'imprint' && <Legal type="imprint" navigateTo={navigateTo} />}
           {currentPage === 'privacy' && <Legal type="privacy" navigateTo={navigateTo} />}
