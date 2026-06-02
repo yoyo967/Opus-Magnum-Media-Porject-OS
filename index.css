@@ -1,0 +1,30 @@
+/* Mirrou Creative Studio — Tenant-Branding-Layer (Dark Luxury: Onyx · Gold · Ivory).
+   Globaler Override über dem Tailwind-CDN — rebrandet ohne Eingriff in einzelne
+   Komponenten. Tenant-Quelle: tenants/mirrou/config.ts (BRAND). */
+
+:root {
+  --mirrou-onyx: #080808;
+  --mirrou-gold: #C8A25A;
+  --mirrou-ivory: #F2EFE9;
+}
+
+body {
+  background-color: var(--mirrou-onyx);
+  color: var(--mirrou-ivory);
+}
+
+/* Serif-Headlines = Mirrou-Signatur (Cormorant Garamond) */
+h1, h2, h3, h4 {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: -0.01em;
+}
+
+/* Gold-Auswahl & -Fokus statt generischem Blau/Lila */
+::selection {
+  background: rgba(200, 162, 90, 0.30);
+  color: var(--mirrou-ivory);
+}
+*:focus-visible {
+  outline: 1px solid var(--mirrou-gold);
+  outline-offset: 2px;
+}
