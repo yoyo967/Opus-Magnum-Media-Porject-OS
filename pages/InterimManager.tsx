@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -42,7 +43,7 @@ const InterimManager: React.FC<{ navigateTo: (page: string) => void }> = ({ navi
         Provide a strategic, concise, and actionable answer. Adopt a professional, executive tone. Use Markdown for formatting.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContentStream({ model: 'gemini-2.5-pro', contents: prompt });
             
             let fullResponse = "";

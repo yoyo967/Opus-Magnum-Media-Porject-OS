@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -49,7 +50,7 @@ export const BerichterstatterTool: React.FC<BerichterstatterToolProps> = ({ navi
         Use Gemini 3.0 reasoning.`;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({ 
                 model: 'gemini-2.5-pro',
                 contents: prompt,

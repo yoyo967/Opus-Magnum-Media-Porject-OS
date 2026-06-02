@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { MASTERPLAN_HIERARCHY, MasterplanNode } from '../masterplanData';
+import { setActiveGeminiKey } from '@/utils/geminiClient';
 
 // --- INTERFACES ---
 export interface User {
@@ -397,6 +398,9 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             load('opus_geminiApiKey', setGeminiApiKey, null);
         }
     }, [user, isOfflineMode]);
+
+    // BYOK: aktiven Gemini-Key in den zentralen Helper spiegeln (per-Tenant-fähig, siehe utils/geminiClient.ts)
+    useEffect(() => { setActiveGeminiKey(geminiApiKey); }, [geminiApiKey]);
 
     // DATA PERSISTENCE: SAVE LOCAL
     useEffect(() => { if(!user || isOfflineMode) window.localStorage.setItem('opus_geminiApiKey', JSON.stringify(geminiApiKey)); }, [geminiApiKey, user, isOfflineMode]);

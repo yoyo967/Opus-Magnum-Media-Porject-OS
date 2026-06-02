@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -86,7 +87,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for better persuasion
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
@@ -131,7 +132,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         Estimate an 'openRateScore' based on the subject line, a 'clarityScore' based on the body, and a 'spamSafetyScore' based on trigger words. Provide 3 short improvement tips.`;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for deeper analysis
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
@@ -196,7 +197,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         setAssistantPosition(null);
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for intelligent editing
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: fullPrompt });
             

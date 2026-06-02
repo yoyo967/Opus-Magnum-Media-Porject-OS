@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -33,7 +34,7 @@ export const PersonaTool: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         setGeneratedImage(null);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
 
             // Generate Persona Details
             const detailsPrompt = `Erstelle eine detaillierte Buyer Persona basierend auf dieser Beschreibung: "${description}". Fülle alle Felder des JSON-Schemas aus.`;

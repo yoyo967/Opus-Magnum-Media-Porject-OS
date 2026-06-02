@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTasks, Task, Feedback } from '../contexts/AppContext';
@@ -40,7 +41,7 @@ const ReviewModal: React.FC<{ task: Task, onClose: () => void, onUpdateTask: (id
         Provide your feedback in 1-3 bullet points.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const imagePart = selectedVersion.type === 'image' ? { inlineData: { mimeType: 'image/jpeg', data: selectedVersion.url.split(',')[1] } } : null;
             // Updated to Gemini 3.0 for better review
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt });

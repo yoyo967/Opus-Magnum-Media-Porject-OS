@@ -1,3 +1,4 @@
+import { getGeminiClient, getGeminiApiKey } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -109,7 +110,7 @@ export const AnimatorTool: React.FC<AnimatorToolProps> = ({ navigateTo }) => {
         deductCredits(cost, 'Animator Video Gen (Veo)');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             let imageB64: string;
             let mimeType: string;
 
@@ -144,7 +145,7 @@ export const AnimatorTool: React.FC<AnimatorToolProps> = ({ navigateTo }) => {
             const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
             if (videoUri) {
                 // @google/genai-api-guideline: video-download-link: Append API key
-                const fetchUrl = `${videoUri}&key=${process.env.API_KEY}`;
+                const fetchUrl = `${videoUri}&key=${getGeminiApiKey()}`;
                 const videoRes = await fetch(fetchUrl);
                 const videoBlob = await videoRes.blob();
                 const localVideoUrl = URL.createObjectURL(videoBlob);

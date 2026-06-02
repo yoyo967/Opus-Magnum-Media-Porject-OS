@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTasks } from '../contexts/AppContext';
@@ -124,7 +125,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                 Be professional, analytical, and constructive. Use HTML tags (<b>, <br>, <ul>, <li>) for formatting the content.
                 `;
 
-                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+                const ai = getGeminiClient();
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-pro',
                     contents: prompt,

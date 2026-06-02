@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -190,7 +191,7 @@ export const BaumeisterTool: React.FC = () => {
         Respond ONLY with a JSON object that adheres to the schema.`;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to 3.0
                 contents: prompt,
@@ -227,7 +228,7 @@ export const BaumeisterTool: React.FC = () => {
         `;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to 3.0
                 contents: prompt,

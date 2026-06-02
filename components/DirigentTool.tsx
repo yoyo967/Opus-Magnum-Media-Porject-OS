@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -103,7 +104,7 @@ export const DirigentTool: React.FC<DirigentToolProps> = ({ navigateTo, onAnalys
         Antworte exakt im JSON-Format gemäß dem vorgegebenen Schema.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for superior reasoning capabilities
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { responseMimeType: "application/json", responseSchema: analysisSchema } });
             const result = JSON.parse(response.text);

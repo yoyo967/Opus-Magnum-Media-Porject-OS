@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -63,7 +64,7 @@ export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; naviga
         }));
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for superior command understanding
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',

@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -247,7 +248,7 @@ Bitte generiere einen vollständigen Kampagnenplan, der strikt dem JSON-Schema f
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for better strategic planning
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', 
@@ -349,7 +350,7 @@ ${(campaign.kpis || []).map(k => `- ${k}`).join('\n')}
         Antworte in JSON.`;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for advanced simulation
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',

@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -85,7 +86,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
                 contents: prompt,

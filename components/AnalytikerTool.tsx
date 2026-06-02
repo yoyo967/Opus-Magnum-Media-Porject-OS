@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useMemo } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -94,7 +95,7 @@ export const AnalytikerTool: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded 
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for causal analysis
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setInsights(response.text);

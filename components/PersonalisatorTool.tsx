@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -63,7 +64,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
                 contents: prompt,
@@ -84,7 +85,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
         setAudioUrl(null);
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const cleanText = personalizedContent.replace(/<\/?mark>/g, '');
             const response = await ai.models.generateContent({
               model: "gemini-2.5-flash-preview-tts",

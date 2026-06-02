@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -209,7 +210,7 @@ const TaskDetailModal: React.FC<{ task: Task; onClose: () => void; onUpdateTask:
         Is the asset suitable? Does it match the brief? Provide your feedback in 1-3 bullet points.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const imagePart = task.imageUrl ? { inlineData: { mimeType: 'image/jpeg', data: task.imageUrl.split(',')[1] } } : null;
             // Updated to Gemini 3.0 for better critique
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt });

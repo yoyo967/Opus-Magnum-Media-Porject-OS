@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect } from 'react';
 import { useTasks, Contact } from '../contexts/AppContext';
@@ -119,7 +120,7 @@ export const ChronistTool: React.FC<ChronistToolProps> = ({ isEmbedded }) => {
         Determine the relationship health, sentiment, and recommend the best next strategic move to deepen the connection.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,

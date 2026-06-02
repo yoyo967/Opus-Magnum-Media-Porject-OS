@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -29,7 +30,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
     const [status, setStatus] = useState<AgentStatus>('idle');
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const logsEndRef = useRef<HTMLDivElement>(null);
-    const ai = useRef(new GoogleGenAI({ apiKey: process.env.API_KEY as string })).current;
+    const ai = useRef(getGeminiClient()).current;
 
     useEffect(() => {
         logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });

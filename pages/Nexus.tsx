@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -106,7 +107,7 @@ const Nexus: React.FC<NexusProps> = ({ navigateTo, isEmbedded }) => {
         }
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({ 
                 model: modelName, 
                 contents: prompt,

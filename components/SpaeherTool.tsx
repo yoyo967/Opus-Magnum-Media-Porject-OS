@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -54,7 +55,7 @@ export const SpaeherTool: React.FC<SpaeherToolProps> = ({ isEmbedded }) => {
     }, [toolInput, setToolInput]);
     
     const performScan = async (activeQuery: string, useSearch: boolean): Promise<{text: string, sources?: any[]}> => {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        const ai = getGeminiClient();
         
         const prompt = `
         Act as a senior market intelligence analyst. Your name is "Späher" (Scout).

@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useTasks, Task, ScheduledPost } from '../contexts/AppContext';
@@ -62,7 +63,7 @@ const ScheduleModal: React.FC<{
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Updated to Gemini 3.0 for better channel adaptation
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
@@ -161,7 +162,7 @@ const QuickDraftModal: React.FC<{
         Keep it punchy, include hashtags. Output ONLY the post text.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for better social copy
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',

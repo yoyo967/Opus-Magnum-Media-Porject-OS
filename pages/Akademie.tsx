@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useTasks, Document } from '../contexts/AppContext';
@@ -86,7 +87,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
             Return ONLY the 3 questions as a JSON array of strings.`;
 
             try {
-                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+                const ai = getGeminiClient();
                 // Updated to Gemini 3.0 for better questions
                 const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
                 const questions = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));
@@ -117,7 +118,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         }
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Updated to Gemini 3.0 for better documentation
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setGeneratedContent(response.text);
@@ -155,7 +156,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         `;
 
         try {
-             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+             const ai = getGeminiClient();
              // Upgraded to Gemini 3.0 for better context handling in education
              const response = await ai.models.generateContentStream({ model: 'gemini-2.5-pro', contents: prompt });
              
@@ -205,7 +206,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         ]`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Updated to Gemini 3.0 for smarter quizzes
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             const quiz = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));

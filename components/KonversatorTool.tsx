@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
@@ -148,7 +149,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
     };
 
     const generateResponse = async (userMessageText: string, useTools: boolean): Promise<void> => {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        const ai = getGeminiClient();
 
         const contents = [
             ...history,
@@ -315,7 +316,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
         `;
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             const text = response.text;
             

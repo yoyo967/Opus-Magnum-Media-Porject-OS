@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -75,7 +76,7 @@ export const ConductorTool: React.FC<ConductorToolProps> = ({ navigateTo, isEmbe
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for better intent routing
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',

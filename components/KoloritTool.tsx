@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -68,7 +69,7 @@ export const KoloritTool: React.FC = () => {
         Brand Description: "${description}"`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for more creative/aesthetic reasoning
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',

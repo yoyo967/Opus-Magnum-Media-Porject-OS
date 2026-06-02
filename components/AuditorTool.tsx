@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob, FunctionDeclaration, Type } from '@google/genai';
@@ -143,7 +144,7 @@ export const AuditorTool: React.FC = () => {
             streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
             setStatusMessage('Establishing connection...');
 
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
 
             // --- FUNCTION CALLING DEFINITIONS ---
             const createTaskFn: FunctionDeclaration = { name: 'createTask', parameters: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING } }, required: ['title', 'description'] } };

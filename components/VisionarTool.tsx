@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -96,7 +97,7 @@ export const VisionarTool: React.FC<VisionarToolProps> = ({ navigateTo, isEmbedd
         deductCredits(cost, 'Visionär Image Gen');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateImages({
                 model: 'imagen-4.0-generate-001', // Using latest Imagen model
                 prompt: prompt,
@@ -131,7 +132,7 @@ export const VisionarTool: React.FC<VisionarToolProps> = ({ navigateTo, isEmbedd
         deductCredits(cost, 'Visionär Image Edit');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             
             let base64Data;
             let mimeType;
@@ -184,7 +185,7 @@ export const VisionarTool: React.FC<VisionarToolProps> = ({ navigateTo, isEmbedd
         deductCredits(cost, 'Visionär Image Analysis');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             let base64Data;
             let mimeType;
              if (editImage.preview.startsWith('data:')) {

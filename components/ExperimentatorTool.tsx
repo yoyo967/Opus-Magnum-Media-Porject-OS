@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -74,7 +75,7 @@ export const ExperimentatorTool: React.FC<ExperimentatorToolProps> = ({ navigate
         const prompt = `Simulate A/B test results based on visual and textual analysis. Goal: Maximize ${goalMetric}. Variant A: Title "${taskA.title}". Variant B: Title "${taskB.title}". Analyze performance drivers. Respond in JSON.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             const response = await ai.models.generateContent({ 
                 model: 'gemini-2.5-pro',
                 contents: prompt, 

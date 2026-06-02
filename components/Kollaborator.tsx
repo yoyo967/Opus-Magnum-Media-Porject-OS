@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, FunctionDeclaration, Type, Part } from '@google/genai';
@@ -18,7 +19,7 @@ export const Kollaborator: React.FC<KollaboratorProps> = ({ task, onUpdateTask }
     const [isLoading, setIsLoading] = useState(false);
     const { campaignBrief } = useTasks();
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const ai = useRef(new GoogleGenAI({ apiKey: process.env.API_KEY as string })).current;
+    const ai = useRef(getGeminiClient()).current;
     
     // Ref to hold the latest messages to avoid stale closures in the cleanup effect
     const messagesRef = useRef(messages);

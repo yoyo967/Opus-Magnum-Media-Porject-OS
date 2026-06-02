@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -89,7 +90,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
         Respond ONLY with a JSON object that adheres to the provided schema.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Step 1: Generate text content and image prompt
             // Upgraded to Gemini 3.0 for superior creative writing and hook generation
             const textResponse = await ai.models.generateContent({

@@ -1,3 +1,4 @@
+import { getGeminiClient } from '@/utils/geminiClient';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -82,7 +83,7 @@ export const MarkenwaechterTool: React.FC = () => {
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             let response;
             if (activeTab === 'textCheck' && checkText) {
                 prompt += `\nText: "${checkText}"`;
@@ -132,7 +133,7 @@ export const MarkenwaechterTool: React.FC = () => {
         Keep the core meaning, but adjust vocabulary, sentence structure, and style to match the brand voice and the target tone. Output ONLY the rewritten text.`;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = getGeminiClient();
             // Upgraded to Gemini 3.0 for higher quality rewriting
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setRewrittenText(response.text);
