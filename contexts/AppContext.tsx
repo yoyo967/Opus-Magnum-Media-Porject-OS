@@ -3,6 +3,8 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { GoogleGenAI, Type } from "@google/genai";
 import { MASTERPLAN_HIERARCHY, MasterplanNode } from '../masterplanData';
 import { setActiveGeminiKey } from '@/utils/geminiClient';
+import { signInWithCustomToken, signOut } from 'firebase/auth';
+import { auth } from '../services/firebase';
 
 // --- INTERFACES ---
 export interface User {
@@ -438,6 +440,16 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setUser(u);
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`User logged in: ${email}`, "System", "success");
+            
+            if (data.firebaseToken) {
+                try {
+                    await signInWithCustomToken(auth, data.firebaseToken);
+                    addSystemLog("Firebase session authenticated via custom token bridge.", "System", "success");
+                } catch (firebaseError: any) {
+                    console.error("Firebase custom token authentication failed:", firebaseError);
+                    addSystemLog("Firebase bridge authentication failed, falling back to local mode.", "System", "warning");
+                }
+            }
         } catch (error: any) {
             console.error("Login failed", error);
             setAuthError(error.message || "Login failed");
@@ -461,6 +473,16 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setUser(u);
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`New tenant initialized: ${email}`, "System", "success");
+            
+            if (data.firebaseToken) {
+                try {
+                    await signInWithCustomToken(auth, data.firebaseToken);
+                    addSystemLog("Firebase session authenticated via custom token bridge.", "System", "success");
+                } catch (firebaseError: any) {
+                    console.error("Firebase custom token authentication failed:", firebaseError);
+                    addSystemLog("Firebase bridge authentication failed, falling back to local mode.", "System", "warning");
+                }
+            }
         } catch (error: any) {
             console.error("Registration failed", error);
             setAuthError(error.message || "Registration failed");
@@ -473,6 +495,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setUser(null);
             window.localStorage.removeItem('opus_localUser');
             setAuthError(null);
+            try {
+                await signOut(auth);
+                addSystemLog("Firebase session logged out.", "System", "info");
+            } catch (firebaseError) {
+                console.error("Firebase signOut failed:", firebaseError);
+            }
         } catch (error) {
             console.error("Logout failed", error);
         }

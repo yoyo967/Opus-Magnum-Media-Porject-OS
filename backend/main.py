@@ -8,6 +8,8 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 # Initialize Firestore Client (will automatically use GCP credentials when on Cloud Run)
 from google.cloud import firestore
+import firebase_admin
+from firebase_admin import auth as fb_auth
 
 app = FastAPI(
     title="OPUS MAGNUM AI",
@@ -32,6 +34,16 @@ except Exception as e:
     print("Warning: Firestore client could not be initialized (No credentials found).", e)
     db = None
 
+# Firebase Admin: praegt Custom Tokens fuer die Client-Firebase (studio-4188712377-b3681),
+# damit der Client per signInWithCustomToken request.auth fuer Firestore-Rules erhaelt.
+# Cross-project: benoetigt zur Laufzeit IAM-Foederation (runtime-SA mit
+# roles/iam.serviceAccountTokenCreator auf der Ziel-firebase-adminsdk-SA).
+FIREBASE_PROJECT = os.environ.get("FIREBASE_PROJECT_ID", "studio-4188712377-b3681")
+try:
+    firebase_admin.initialize_app(options={"projectId": FIREBASE_PROJECT})
+except Exception as e:
+    print("Warning: firebase-admin could not be initialized:", e)
+
 # Security
 SECRET_KEY = os.environ.get("JWT_SECRET", "super-secret-opus-magnum-key-for-local-dev")
 ALGORITHM = "HS256"
@@ -51,6 +63,15 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def mint_firebase_token(uid: str):
+    """Best-effort Firebase Custom Token fuer den Client (signInWithCustomToken).
+    Faellt sanft auf None zurueck, wenn IAM/Setup fehlt -> Client nutzt dann localStorage."""
+    try:
+        return fb_auth.create_custom_token(uid).decode("utf-8")
+    except Exception as e:
+        print("Warning: Firebase custom token minting failed:", e)
+        return None
 
 class AuthRequest(BaseModel):
     email: str
@@ -81,7 +102,7 @@ def login(request: AuthRequest):
         raise HTTPException(status_code=401, detail="Invalid credentials")
         
     access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": user_doc.id, "email": request.email.lower()}
+    return {"token": access_token, "tenant_id": user_doc.id, "email": request.email.lower(), "firebaseToken": mint_firebase_token(user_doc.id)}
 
 @app.post("/api/auth/register")
 def register(request: AuthRequest):
@@ -105,7 +126,7 @@ def register(request: AuthRequest):
     update_time, tenant_ref = users_ref.add(tenant_data)
     
     access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": tenant_ref.id, "email": request.email.lower(), "status": "tenant created"}
+    return {"token": access_token, "tenant_id": tenant_ref.id, "email": request.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_ref.id)}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
