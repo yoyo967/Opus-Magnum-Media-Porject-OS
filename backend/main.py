@@ -102,7 +102,22 @@ def login(request: AuthRequest):
         raise HTTPException(status_code=401, detail="Invalid credentials")
         
     access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": user_doc.id, "email": request.email.lower(), "firebaseToken": mint_firebase_token(user_doc.id)}
+    
+    # Ensure tenant membership document exists (backward compatibility)
+    tenant_id = user_doc.id
+    try:
+        member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
+        if not member_ref.get().exists:
+            member_ref.set({
+                "email": request.email.lower(),
+                "role": "Owner",
+                "joined_at": firestore.SERVER_TIMESTAMP,
+                "permissions": ["all"]
+            })
+    except Exception as e:
+        print("Warning: Failed to ensure tenant membership:", e)
+        
+    return {"token": access_token, "tenant_id": tenant_id, "email": request.email.lower(), "firebaseToken": mint_firebase_token(tenant_id)}
 
 @app.post("/api/auth/register")
 def register(request: AuthRequest):
@@ -124,9 +139,22 @@ def register(request: AuthRequest):
     }
     
     update_time, tenant_ref = users_ref.add(tenant_data)
+    tenant_id = tenant_ref.id
     
+    # Create tenant membership document
+    try:
+        member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
+        member_ref.set({
+            "email": request.email.lower(),
+            "role": "Owner",
+            "joined_at": firestore.SERVER_TIMESTAMP,
+            "permissions": ["all"]
+        })
+    except Exception as e:
+        print("Warning: Failed to create tenant membership:", e)
+        
     access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": tenant_ref.id, "email": request.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_ref.id)}
+    return {"token": access_token, "tenant_id": tenant_id, "email": request.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_id)}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

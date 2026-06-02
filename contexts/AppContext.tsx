@@ -407,8 +407,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (user && !isOfflineMode) {
             const uid = user.uid;
 
-            // 1. Sync tasks (P1.4)
-            const tasksRef = collection(db, 'users', uid, 'tasks');
+            // 1. Sync tasks (P2.4 - Shared Tenant Workspace)
+            const tasksRef = collection(db, 'tenants', uid, 'tasks');
             const unsubscribeTasks = onSnapshot(tasksRef, (snapshot) => {
                 const fetchedTasks: Task[] = [];
                 snapshot.forEach((doc) => {
@@ -418,8 +418,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setTasks(fetchedTasks.length > 0 ? fetchedTasks : initialTasks);
             });
 
-            // 2. Sync documents (P1.4)
-            const docsRef = collection(db, 'users', uid, 'documents');
+            // 2. Sync documents (P2.4 - Shared Tenant Workspace)
+            const docsRef = collection(db, 'tenants', uid, 'documents');
             const unsubscribeDocs = onSnapshot(docsRef, (snapshot) => {
                 const fetchedDocs: Document[] = [];
                 snapshot.forEach((doc) => {
@@ -428,8 +428,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setDocuments(fetchedDocs.length > 0 ? fetchedDocs : initialDocuments);
             });
 
-            // 3. Sync personas (P1.4)
-            const personasRef = collection(db, 'users', uid, 'personas');
+            // 3. Sync personas (P2.4 - Shared Tenant Workspace)
+            const personasRef = collection(db, 'tenants', uid, 'personas');
             const unsubscribePersonas = onSnapshot(personasRef, (snapshot) => {
                 const fetchedPersonas: Persona[] = [];
                 snapshot.forEach((doc) => {
@@ -438,8 +438,8 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setPersonas(fetchedPersonas);
             });
 
-            // 4. Sync logs (P1.4)
-            const logsRef = collection(db, 'users', uid, 'logs');
+            // 4. Sync logs (P2.4 - Shared Tenant Workspace)
+            const logsRef = collection(db, 'tenants', uid, 'logs');
             const unsubscribeLogs = onSnapshot(logsRef, (snapshot) => {
                 const fetchedLogs: SystemLogEntry[] = [];
                 snapshot.forEach((doc) => {
@@ -449,7 +449,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setSystemLogs(fetchedLogs.slice(0, 50));
             });
 
-            // 5. Load user root settings (API key, profile, credits)
+            // 5. Load user root settings (Private: API key, profile, credits)
             const userDocRef = doc(db, 'users', uid);
             const unsubscribeUserDoc = onSnapshot(userDocRef, (snapshot) => {
                 if (snapshot.exists()) {
@@ -460,12 +460,40 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 }
             });
 
+            // 6. Sync strategyBrief (P2.4 - Shared Tenant Workspace)
+            const strategyBriefRef = doc(db, 'tenants', uid, 'briefs', 'strategy');
+            const unsubscribeStrategyBrief = onSnapshot(strategyBriefRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.deleted) {
+                        setStrategyBrief(null);
+                    } else {
+                        setStrategyBrief(data as StrategyBrief);
+                    }
+                }
+            });
+
+            // 7. Sync campaignBrief (P2.4 - Shared Tenant Workspace)
+            const campaignBriefRef = doc(db, 'tenants', uid, 'briefs', 'campaign');
+            const unsubscribeCampaignBrief = onSnapshot(campaignBriefRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.deleted) {
+                        setCampaignBrief(null);
+                    } else {
+                        setCampaignBrief(data as CampaignBrief);
+                    }
+                }
+            });
+
             return () => {
                 unsubscribeTasks();
                 unsubscribeDocs();
                 unsubscribePersonas();
                 unsubscribeLogs();
                 unsubscribeUserDoc();
+                unsubscribeStrategyBrief();
+                unsubscribeCampaignBrief();
             };
         }
     }, [user, isOfflineMode]);
@@ -478,7 +506,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const runMigration = async () => {
                 try {
                     // Check tasks
-                    const tasksRef = collection(db, 'users', uid, 'tasks');
+                    const tasksRef = collection(db, 'tenants', uid, 'tasks');
                     const tasksSnapshot = await getDocs(tasksRef);
                     if (tasksSnapshot.empty) {
                         const localTasksStr = window.localStorage.getItem('opus_tasks');
@@ -486,7 +514,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localTasks: Task[] = JSON.parse(localTasksStr);
                             const batch = writeBatch(db);
                             localTasks.forEach(task => {
-                                const docRef = doc(db, 'users', uid, 'tasks', String(task.id));
+                                const docRef = doc(db, 'tenants', uid, 'tasks', String(task.id));
                                 batch.set(docRef, task);
                             });
                             await batch.commit();
@@ -495,7 +523,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check documents
-                    const docsRef = collection(db, 'users', uid, 'documents');
+                    const docsRef = collection(db, 'tenants', uid, 'documents');
                     const docsSnapshot = await getDocs(docsRef);
                     if (docsSnapshot.empty) {
                         const localDocsStr = window.localStorage.getItem('opus_documents');
@@ -503,7 +531,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localDocs: Document[] = JSON.parse(localDocsStr);
                             const batch = writeBatch(db);
                             localDocs.forEach(docObj => {
-                                const docRef = doc(db, 'users', uid, 'documents', docObj.id);
+                                const docRef = doc(db, 'tenants', uid, 'documents', docObj.id);
                                 batch.set(docRef, docObj);
                             });
                             await batch.commit();
@@ -512,7 +540,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check personas
-                    const personasRef = collection(db, 'users', uid, 'personas');
+                    const personasRef = collection(db, 'tenants', uid, 'personas');
                     const personasSnapshot = await getDocs(personasRef);
                     if (personasSnapshot.empty) {
                         const localPersonasStr = window.localStorage.getItem('opus_personas');
@@ -520,7 +548,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localPersonas: Persona[] = JSON.parse(localPersonasStr);
                             const batch = writeBatch(db);
                             localPersonas.forEach(persona => {
-                                const docRef = doc(db, 'users', uid, 'personas', String(persona.id));
+                                const docRef = doc(db, 'tenants', uid, 'personas', String(persona.id));
                                 batch.set(docRef, persona);
                             });
                             await batch.commit();
@@ -528,7 +556,31 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                         }
                     }
 
-                    // Check user root configs (API key, credits, profile)
+                    // Check strategyBrief
+                    const strategyBriefRef = doc(db, 'tenants', uid, 'briefs', 'strategy');
+                    const strategyBriefSnapshot = await getDoc(strategyBriefRef);
+                    if (!strategyBriefSnapshot.exists()) {
+                        const localStrategyStr = window.localStorage.getItem('opus_strategyBrief');
+                        if (localStrategyStr) {
+                            const localStrategy: StrategyBrief = JSON.parse(localStrategyStr);
+                            await setDoc(strategyBriefRef, { ...localStrategy, deleted: false });
+                            addSystemLog("Migrated strategyBrief to Firestore.", 'System', 'success');
+                        }
+                    }
+
+                    // Check campaignBrief
+                    const campaignBriefRef = doc(db, 'tenants', uid, 'briefs', 'campaign');
+                    const campaignBriefSnapshot = await getDoc(campaignBriefRef);
+                    if (!campaignBriefSnapshot.exists()) {
+                        const localCampaignStr = window.localStorage.getItem('opus_campaignBrief');
+                        if (localCampaignStr) {
+                            const localCampaign: CampaignBrief = JSON.parse(localCampaignStr);
+                            await setDoc(campaignBriefRef, { ...localCampaign, deleted: false });
+                            addSystemLog("Migrated campaignBrief to Firestore.", 'System', 'success');
+                        }
+                    }
+
+                    // Check user root configs (Private: API key, credits, profile)
                     const userDocRef = doc(db, 'users', uid);
                     const userDocSnapshot = await getDoc(userDocRef);
                     if (!userDocSnapshot.exists()) {
@@ -678,7 +730,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
         setSystemLogs(prev => [newLog, ...prev].slice(0, 50));
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'users', user.uid, 'logs', String(newLogId));
+            const docRef = doc(db, 'tenants', user.uid, 'logs', String(newLogId));
             setDoc(docRef, newLog).catch(err => console.error("Firestore addSystemLog failed:", err));
         }
     };
@@ -709,7 +761,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTasks(prev => [newTask, ...prev]);
         addSystemLog(`Task created: "${title}"`, isSystemGenerated ? 'AURORA' : 'System');
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'users', user.uid, 'tasks', String(newTaskId));
+            const docRef = doc(db, 'tenants', user.uid, 'tasks', String(newTaskId));
             setDoc(docRef, newTask).catch(err => console.error("Firestore addTask failed:", err));
         }
         return newTaskId;
@@ -728,6 +780,15 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         
         setTasks(prev => [...newTasks, ...prev]);
         addSystemLog(`${tasksToAdd.length} tasks generated via Strategic Automation.`, 'Stratege', 'success');
+        
+        if (user && !isOfflineMode) {
+            const batch = writeBatch(db);
+            newTasks.forEach(task => {
+                const docRef = doc(db, 'tenants', user.uid, 'tasks', String(task.id));
+                batch.set(docRef, task);
+            });
+            batch.commit().catch(err => console.error("Firestore addMultipleTasks failed:", err));
+        }
     };
     
     const updateTask = (taskId: number, updates: Partial<Task>) => {
@@ -748,7 +809,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }));
 
         if (user && !isOfflineMode && updatedTaskObj) {
-            const docRef = doc(db, 'users', user.uid, 'tasks', String(taskId));
+            const docRef = doc(db, 'tenants', user.uid, 'tasks', String(taskId));
             setDoc(docRef, updatedTaskObj).catch(err => console.error("Firestore updateTask failed:", err));
         }
     };
@@ -774,7 +835,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addSystemLog(`New Document archived: "${title}"`, 'Academy');
 
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'users', user.uid, 'documents', docId);
+            const docRef = doc(db, 'tenants', user.uid, 'documents', docId);
             setDoc(docRef, newDoc).catch(err => console.error("Firestore addDocument failed:", err));
         }
     };
@@ -786,8 +847,40 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addSystemLog(`Persona created: "${persona.name}"`, 'Persona');
 
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'users', user.uid, 'personas', String(newPersonaId));
+            const docRef = doc(db, 'tenants', user.uid, 'personas', String(newPersonaId));
             setDoc(docRef, newPersona).catch(err => console.error("Firestore addPersona failed:", err));
+        }
+    };
+
+    const changeStrategyBrief = async (brief: StrategyBrief | null) => {
+        setStrategyBrief(brief);
+        if (user && !isOfflineMode) {
+            try {
+                const briefRef = doc(db, 'tenants', user.uid, 'briefs', 'strategy');
+                if (brief === null) {
+                    await setDoc(briefRef, { deleted: true });
+                } else {
+                    await setDoc(briefRef, { ...brief, deleted: false });
+                }
+            } catch (err) {
+                console.error("Firestore setStrategyBrief failed:", err);
+            }
+        }
+    };
+
+    const changeCampaignBrief = async (brief: CampaignBrief | null) => {
+        setCampaignBrief(brief);
+        if (user && !isOfflineMode) {
+            try {
+                const briefRef = doc(db, 'tenants', user.uid, 'briefs', 'campaign');
+                if (brief === null) {
+                    await setDoc(briefRef, { deleted: true });
+                } else {
+                    await setDoc(briefRef, { ...brief, deleted: false });
+                }
+            } catch (err) {
+                console.error("Firestore setCampaignBrief failed:", err);
+            }
         }
     };
 
@@ -931,7 +1024,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         <TasksContext.Provider value={{ 
             user, login, register, logout, geminiApiKey, setGeminiApiKey: changeGeminiApiKey, authError, dismissAuthError, enableOfflineMode, isOfflineMode, 
             tasks, addTask, addMultipleTasks, setTasks, updateTask, publishAndAnalyzeTask, 
-            strategyBrief, setStrategyBrief, campaignBrief, setCampaignBrief, toolInput, setToolInput, 
+            strategyBrief, setStrategyBrief: changeStrategyBrief, campaignBrief, setCampaignBrief: changeCampaignBrief, toolInput, setToolInput, 
             optimizationContext, setOptimizationContext, documents, addDocument, indexTaskAsset, 
             highlightedTaskIds, setHighlightedTaskIds, scheduledPosts, schedulePost, personas, addPersona, 
             brandGuidelines, setBrandGuidelines, nexusQuery, setNexusQuery, experiments, addExperiment, updateExperiment, 
