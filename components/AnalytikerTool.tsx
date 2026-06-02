@@ -96,7 +96,7 @@ export const AnalytikerTool: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for causal analysis
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setInsights(response.text);
         } catch (e) {
             console.error("Fehler bei der Insight-Generierung:", e);

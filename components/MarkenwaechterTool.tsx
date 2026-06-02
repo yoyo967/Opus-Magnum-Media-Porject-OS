@@ -87,14 +87,14 @@ export const MarkenwaechterTool: React.FC = () => {
             if (activeTab === 'textCheck' && checkText) {
                 prompt += `\nText: "${checkText}"`;
                 // Upgraded to Gemini 3.0 for stricter compliance checking
-                response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             } else if (activeTab === 'imageCheck' && checkImage) {
                 prompt += "\nImage is attached.";
                 const base64Data = await blobToBase64(checkImage.file);
                 const imagePart = { inlineData: { mimeType: checkImage.file.type, data: base64Data } };
                 const textPart = { text: prompt };
                 // Upgraded to Gemini 3.0 for multimodal checking
-                response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: { parts: [imagePart, textPart] } });
+                response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: { parts: [imagePart, textPart] } });
             } else {
                 setCheckResult("Kein Inhalt zum Überprüfen vorhanden.");
                 setIsChecking(false);
@@ -134,7 +134,7 @@ export const MarkenwaechterTool: React.FC = () => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for higher quality rewriting
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setRewrittenText(response.text);
         } catch (error) {
             console.error("Rewrite failed:", error);

@@ -192,7 +192,7 @@ export const BaumeisterTool: React.FC = () => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Upgraded to 3.0
+                model: 'gemini-2.5-pro', // Upgraded to 3.0
                 contents: prompt,
                 config: { responseMimeType: 'application/json', responseSchema: pageSchema }
             });
@@ -229,7 +229,7 @@ export const BaumeisterTool: React.FC = () => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Upgraded to 3.0
+                model: 'gemini-2.5-pro', // Upgraded to 3.0
                 contents: prompt,
             });
             setGeneratedCode(response.text.replace(/```jsx|```tsx|```/g, ''));

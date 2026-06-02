@@ -71,7 +71,7 @@ export const KoloritTool: React.FC = () => {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for more creative/aesthetic reasoning
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: styleGuideSchema }
             });

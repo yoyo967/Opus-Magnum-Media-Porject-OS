@@ -65,7 +65,7 @@ const ScheduleModal: React.FC<{
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Updated to Gemini 3.0 for better channel adaptation
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json" }
             });
@@ -164,7 +164,7 @@ const QuickDraftModal: React.FC<{
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for better social copy
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt
             });
             setDraft(response.text);

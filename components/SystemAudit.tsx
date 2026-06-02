@@ -120,7 +120,7 @@ const SystemAudit: React.FC<SystemAuditProps> = ({ navigateTo, isEmbedded }) => 
 
                 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
                 const response = await ai.models.generateContent({
-                    model: 'gemini-3-pro-preview',
+                    model: 'gemini-2.5-pro',
                     contents: prompt,
                     config: { responseMimeType: 'application/json', responseSchema: auditSchema }
                 });

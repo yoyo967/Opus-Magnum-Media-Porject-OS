@@ -28,7 +28,7 @@ const AddEventModal: React.FC<{ date: Date; onClose: () => void; onSave: (event:
         const prompt = `Generate a concise 3-item meeting agenda for: "${title}". ${contactContext} Format: "- [Item 1]\n- [Item 2]\n- [Item 3]" Keep it professional and brief.`;
         try {
              const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-             const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
              setNotes(prev => (prev ? prev + "\n\nAgenda:\n" : "Agenda:\n") + response.text);
         } catch(e) { console.error(e); } finally { setIsGeneratingAgenda(false); }
     };

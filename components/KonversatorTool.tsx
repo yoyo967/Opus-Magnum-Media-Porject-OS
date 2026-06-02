@@ -191,7 +191,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
             config.thinkingConfig = { thinkingBudget: 1024 }; // Reserve tokens for thinking 
         }
 
-        const modelName = 'gemini-3-pro-preview';
+        const modelName = 'gemini-2.5-pro';
 
         const responseStream = await ai.models.generateContentStream({
             model: modelName,
@@ -316,7 +316,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
         
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             const text = response.text;
             
             const titleMatch = text.match(/Title:\s*(.*)/);

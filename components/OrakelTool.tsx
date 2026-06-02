@@ -148,7 +148,7 @@ export const OrakelTool: React.FC<OrakelToolProps> = ({ navigateTo, isEmbedded }
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for deeper data analysis
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: config.schema }
             });
@@ -195,7 +195,7 @@ export const OrakelTool: React.FC<OrakelToolProps> = ({ navigateTo, isEmbedded }
         
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-2.5-pro',
             contents: prompt,
             config
         });

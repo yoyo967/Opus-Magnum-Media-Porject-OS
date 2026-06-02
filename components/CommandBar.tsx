@@ -66,7 +66,7 @@ export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; naviga
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for superior command understanding
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: [...history, { role: 'user', parts: [{ text: currentInput }] }],
                 config: { systemInstruction, tools }
             });

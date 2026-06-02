@@ -34,7 +34,7 @@ export const DiplomatTool: React.FC<DiplomatToolProps> = ({ isEmbedded }) => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { thinkingConfig: { thinkingBudget: 2048 } }
             });

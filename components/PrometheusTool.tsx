@@ -87,7 +87,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
                 contents: prompt,
                 config: {
                     thinkingConfig: { thinkingBudget: 2048 } // Enable Thinking Mode for deeper reasoning

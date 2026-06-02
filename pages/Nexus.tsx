@@ -90,7 +90,7 @@ const Nexus: React.FC<NexusProps> = ({ navigateTo, isEmbedded }) => {
 
         const context = searchResults.map(r => `Type: ${r.type}\nTitle: ${r.title}\nContent: ${r.content.substring(0, 300)}...`).join('\n\n---\n\n');
         
-        const modelName = deepMode ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
+        const modelName = deepMode ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
         const systemInstruction = deepMode 
             ? "You are MAGNUM AI, the central intelligence of a Project OS. Using your advanced reasoning capabilities, synthesize the search results into a comprehensive, strategic answer. Connect the dots between tasks, documents, and personas to provide deep insights."
             : "Act as MAGNUM AI, the central intelligence of a Project OS. Based on the following search results from within the system, synthesize a concise and helpful answer for the user's query.";

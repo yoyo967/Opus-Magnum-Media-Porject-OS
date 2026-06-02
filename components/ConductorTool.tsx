@@ -78,7 +78,7 @@ export const ConductorTool: React.FC<ConductorToolProps> = ({ navigateTo, isEmbe
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for better intent routing
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: agentRouterSchema }
             });

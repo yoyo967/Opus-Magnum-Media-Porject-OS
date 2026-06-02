@@ -51,7 +51,7 @@ export const BerichterstatterTool: React.FC<BerichterstatterToolProps> = ({ navi
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({ 
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { thinkingConfig: { thinkingBudget: 2048 } }
             });

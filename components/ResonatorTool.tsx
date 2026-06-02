@@ -93,7 +93,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
             // Step 1: Generate text content and image prompt
             // Upgraded to Gemini 3.0 for superior creative writing and hook generation
             const textResponse = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: socialPostSchema }
             });

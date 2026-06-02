@@ -212,7 +212,7 @@ const TaskDetailModal: React.FC<{ task: Task; onClose: () => void; onUpdateTask:
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const imagePart = task.imageUrl ? { inlineData: { mimeType: 'image/jpeg', data: task.imageUrl.split(',')[1] } } : null;
             // Updated to Gemini 3.0 for better critique
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt });
             
             const newFeedback = { user: 'AURORA', comment: response.text, timestamp: new Date().toISOString() };
             const updatedFeedback = [...feedback, newFeedback];

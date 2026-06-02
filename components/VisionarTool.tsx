@@ -198,7 +198,7 @@ export const VisionarTool: React.FC<VisionarToolProps> = ({ navigateTo, isEmbedd
             const prompt = "Analyze this image for a marketing campaign. Provide a description, 5 relevant tags, and a sentiment score (0-100). Respond in JSON.";
             
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Upgraded to Gemini 3.0 for better vision analysis
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0 for better vision analysis
                 contents: {
                     parts: [
                         { inlineData: { mimeType, data: base64Data } },

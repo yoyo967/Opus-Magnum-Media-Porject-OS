@@ -65,7 +65,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
                 contents: prompt,
             });
             setPersonalizedContent(response.text);

@@ -89,7 +89,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for better persuasion
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: {
                     responseMimeType: "application/json",
@@ -134,7 +134,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for deeper analysis
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: schema }
             });
@@ -198,7 +198,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for intelligent editing
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: fullPrompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: fullPrompt });
             
             originalSelection.range.deleteContents();
             originalSelection.range.insertNode(document.createTextNode(response.text));

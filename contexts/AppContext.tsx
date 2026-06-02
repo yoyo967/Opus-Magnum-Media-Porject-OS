@@ -584,7 +584,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         try {
             if (!geminiApiKey) throw new Error("Gemini API Key missing. Please provide it in Settings.");
             const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt, config: { responseMimeType: "application/json", responseSchema: assetSchema } });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt, config: { responseMimeType: "application/json", responseSchema: assetSchema } });
             const assetMetadata = JSON.parse(response.text);
             updateTask(taskId, { assetMetadata });
             addSystemLog(`Asset indexed successfully via Gemini 3.0.`, 'Library', 'success');
@@ -599,7 +599,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         try {
             if (!geminiApiKey) throw new Error("Gemini API Key missing. Please provide it in Settings.");
             const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt, config: { responseMimeType: "application/json", responseSchema: performanceSchema } });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { responseMimeType: "application/json", responseSchema: performanceSchema } });
             const performanceData = JSON.parse(response.text);
             updateTask(taskId, { publishedAt: new Date().toISOString(), performanceData });
             addSystemLog(`Content published: "${taskToPublish.title}"`, 'Publisher');

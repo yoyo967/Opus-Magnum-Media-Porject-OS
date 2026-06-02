@@ -88,7 +88,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
             try {
                 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
                 // Updated to Gemini 3.0 for better questions
-                const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+                const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
                 const questions = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));
                 setSuggestedQuestions(questions);
             } catch (e) {
@@ -119,7 +119,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Updated to Gemini 3.0 for better documentation
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setGeneratedContent(response.text);
         } catch (error) {
             console.error("Content generation failed:", error);
@@ -157,7 +157,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         try {
              const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
              // Upgraded to Gemini 3.0 for better context handling in education
-             const response = await ai.models.generateContentStream({ model: 'gemini-3-pro-preview', contents: prompt });
+             const response = await ai.models.generateContentStream({ model: 'gemini-2.5-pro', contents: prompt });
              
              let fullResponse = "";
              setChatHistory(prev => [...prev, { role: 'ai', text: '' }]);
@@ -207,7 +207,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Updated to Gemini 3.0 for smarter quizzes
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             const quiz = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));
             setQuizData(quiz);
         } catch (e) {

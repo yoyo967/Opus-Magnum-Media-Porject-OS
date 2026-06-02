@@ -43,7 +43,7 @@ const InterimManager: React.FC<{ navigateTo: (page: string) => void }> = ({ navi
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const response = await ai.models.generateContentStream({ model: 'gemini-3-pro-preview', contents: prompt });
+            const response = await ai.models.generateContentStream({ model: 'gemini-2.5-pro', contents: prompt });
             
             let fullResponse = "";
             setChatHistory(prev => [...prev, { role: 'ai', text: '' }]);

@@ -56,7 +56,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
             Antworte nur mit der textlichen Zusammenfassung.`;
             
             // Upgraded to Gemini 3.0 for deep analysis
-            const analysisResponse = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: analysisPrompt });
+            const analysisResponse = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: analysisPrompt });
             const analysisSummary = analysisResponse.text;
             updateLog('analysis', { status: 'complete', details: `Analyse abgeschlossen (G3.0). Fokus: ${analysisSummary.substring(0, 100)}...` });
 
@@ -69,7 +69,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
             Generate a complete campaign plan that strictly adheres to the provided JSON schema.`;
             
             // Strategy generation usually benefits from speed/cost balance, but for AURORA (the premium agent), we use 3.0
-            const strategyResponse = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: strategyPrompt, config: { responseMimeType: "application/json", responseSchema: campaignSchema } });
+            const strategyResponse = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: strategyPrompt, config: { responseMimeType: "application/json", responseSchema: campaignSchema } });
             const generatedCampaign: CampaignBrief = JSON.parse(strategyResponse.text);
             updateLog('strategy', { status: 'complete', details: `Strategie für "${generatedCampaign.campaignTitle}" erstellt.` });
 
@@ -85,7 +85,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
             Respond ONLY with a JSON object that adheres to the schema.`;
             
             // Updated to Gemini 3.0 for smarter task breakdown
-            const planningResponse = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: planningPrompt, config: { responseMimeType: "application/json", responseSchema: tasksSchema } });
+            const planningResponse = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: planningPrompt, config: { responseMimeType: "application/json", responseSchema: tasksSchema } });
             const { tasks: newTasks } = JSON.parse(planningResponse.text);
             updateLog('planning', { status: 'complete', details: `${newTasks.length} Aufgaben generiert.` });
 

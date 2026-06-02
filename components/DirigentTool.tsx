@@ -105,7 +105,7 @@ export const DirigentTool: React.FC<DirigentToolProps> = ({ navigateTo, onAnalys
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for superior reasoning capabilities
-            const response = await ai.models.generateContent({ model: 'gemini-3-pro-preview', contents: prompt, config: { responseMimeType: "application/json", responseSchema: analysisSchema } });
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { responseMimeType: "application/json", responseSchema: analysisSchema } });
             const result = JSON.parse(response.text);
             setAnalysisResult(result);
             if(result.summary) {

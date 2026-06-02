@@ -250,7 +250,7 @@ Bitte generiere einen vollständigen Kampagnenplan, der strikt dem JSON-Schema f
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for better strategic planning
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', 
+                model: 'gemini-2.5-pro', 
                 contents: prompt,
                 config: {
                     responseMimeType: "application/json",
@@ -352,7 +352,7 @@ ${(campaign.kpis || []).map(k => `- ${k}`).join('\n')}
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             // Upgraded to Gemini 3.0 for advanced simulation
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: { responseMimeType: "application/json", responseSchema: wargameSchema }
             });
