@@ -1,61 +1,64 @@
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import PortfolioApp from './pages/portfolio/PortfolioApp';
+import { TasksProvider, useTasks } from './contexts/AppContext';
+// Strukturelle Komponenten bleiben eager (auf jeder Seite sichtbar):
 import Header from './components/Header';
 import { SecondaryHeader } from './components/SecondaryHeader';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import Campaign from './pages/Campaign';
-import Meisterwerk from './components/Meisterwerk';
-import Visionar from './pages/Visionar';
-import Stratege from './pages/Stratege';
-import Konversator from './pages/Konversator';
-import Auditor from './pages/Auditor';
-import Animator from './pages/Animator';
-import Dirigent from './pages/Dirigent';
-import Secret from './pages/Secret';
-import Masterplan from './pages/Masterplan';
-import Einreichung from './pages/Einreichung';
-import { TasksProvider, useTasks } from './contexts/AppContext';
-import Personalisator from './pages/Personalisator';
-import Orakel from './pages/Orakel';
-import Mediathek from './pages/Mediathek';
-import Akademie from './pages/Akademie';
-import Observatorium from './pages/Observatorium';
-import Conductor from './pages/Conductor';
-import Publisher from './pages/Publisher';
-import Persona from './pages/Persona';
-import Auditorium from './pages/Auditorium';
-import Analytiker from './pages/Analytiker';
 import { CommandBar } from './components/CommandBar';
-import Markenwaechter from './pages/Markenwaechter';
-import Berichterstatter from './pages/Berichterstatter';
-import Nexus from './pages/Nexus';
-import EmailMarketing from './pages/EmailMarketing';
-import Kalkulator from './pages/Kalkulator';
-import Experimentator from './pages/Experimentator';
-import Prometheus from './pages/Prometheus';
-import Resonator from './pages/Resonator';
-import Gespraechsleiter from './pages/Gespraechsleiter';
-import Kolorit from './pages/Kolorit';
-import Ensemble from './pages/Ensemble';
-import Diplomat from './pages/Diplomat';
-import Chronist from './pages/Chronist';
-import Sequenzer from './pages/Sequenzer';
-import Taktgeber from './pages/Taktgeber';
-import Spaeher from './pages/Spaeher';
-import Baumeister from './pages/Baumeister';
-import InterimManager from './pages/InterimManager';
-import StatusBericht from './pages/StatusBericht';
-import SystemAudit from './pages/SystemAudit';
-import GrantBook from './pages/GrantBook';
-import Legal from './pages/Legal';
-import BrandingKit from './pages/BrandingKit';
-import AIOperator from './pages/AIOperator';
 import { Toast } from './components/Toast';
-import Auth from './pages/Auth';
-import Settings from './pages/Settings';
+import LoadingScreen from './components/LoadingScreen';
+
+// Lazy-loaded Seiten/Routen — jede Seite lädt nur ihr eigenes JS (Code-Splitting, P1.3).
+const PortfolioApp = React.lazy(() => import('./pages/portfolio/PortfolioApp'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Campaign = React.lazy(() => import('./pages/Campaign'));
+const Meisterwerk = React.lazy(() => import('./components/Meisterwerk'));
+const Visionar = React.lazy(() => import('./pages/Visionar'));
+const Stratege = React.lazy(() => import('./pages/Stratege'));
+const Konversator = React.lazy(() => import('./pages/Konversator'));
+const Auditor = React.lazy(() => import('./pages/Auditor'));
+const Animator = React.lazy(() => import('./pages/Animator'));
+const Dirigent = React.lazy(() => import('./pages/Dirigent'));
+const Secret = React.lazy(() => import('./pages/Secret'));
+const Masterplan = React.lazy(() => import('./pages/Masterplan'));
+const Einreichung = React.lazy(() => import('./pages/Einreichung'));
+const Personalisator = React.lazy(() => import('./pages/Personalisator'));
+const Orakel = React.lazy(() => import('./pages/Orakel'));
+const Mediathek = React.lazy(() => import('./pages/Mediathek'));
+const Akademie = React.lazy(() => import('./pages/Akademie'));
+const Observatorium = React.lazy(() => import('./pages/Observatorium'));
+const Conductor = React.lazy(() => import('./pages/Conductor'));
+const Publisher = React.lazy(() => import('./pages/Publisher'));
+const Persona = React.lazy(() => import('./pages/Persona'));
+const Auditorium = React.lazy(() => import('./pages/Auditorium'));
+const Analytiker = React.lazy(() => import('./pages/Analytiker'));
+const Markenwaechter = React.lazy(() => import('./pages/Markenwaechter'));
+const Berichterstatter = React.lazy(() => import('./pages/Berichterstatter'));
+const Nexus = React.lazy(() => import('./pages/Nexus'));
+const EmailMarketing = React.lazy(() => import('./pages/EmailMarketing'));
+const Kalkulator = React.lazy(() => import('./pages/Kalkulator'));
+const Experimentator = React.lazy(() => import('./pages/Experimentator'));
+const Prometheus = React.lazy(() => import('./pages/Prometheus'));
+const Resonator = React.lazy(() => import('./pages/Resonator'));
+const Gespraechsleiter = React.lazy(() => import('./pages/Gespraechsleiter'));
+const Kolorit = React.lazy(() => import('./pages/Kolorit'));
+const Ensemble = React.lazy(() => import('./pages/Ensemble'));
+const Diplomat = React.lazy(() => import('./pages/Diplomat'));
+const Chronist = React.lazy(() => import('./pages/Chronist'));
+const Sequenzer = React.lazy(() => import('./pages/Sequenzer'));
+const Taktgeber = React.lazy(() => import('./pages/Taktgeber'));
+const Spaeher = React.lazy(() => import('./pages/Spaeher'));
+const Baumeister = React.lazy(() => import('./pages/Baumeister'));
+const InterimManager = React.lazy(() => import('./pages/InterimManager'));
+const StatusBericht = React.lazy(() => import('./pages/StatusBericht'));
+const SystemAudit = React.lazy(() => import('./pages/SystemAudit'));
+const GrantBook = React.lazy(() => import('./pages/GrantBook'));
+const Legal = React.lazy(() => import('./pages/Legal'));
+const BrandingKit = React.lazy(() => import('./pages/BrandingKit'));
+const AIOperator = React.lazy(() => import('./pages/AIOperator'));
+const Auth = React.lazy(() => import('./pages/Auth'));
+const Settings = React.lazy(() => import('./pages/Settings'));
 
 const SystemBootNotification: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     React.useEffect(() => {
@@ -91,7 +94,7 @@ const AppContent = () => {
     // If not logged in and not on auth page, redirect to auth
     if (!user && currentPage !== 'auth') {
         setCurrentPage('auth');
-    } 
+    }
     // If logged in but no API key and not on auth/settings, redirect to settings
     else if (user && !geminiApiKey && currentPage !== 'settings' && currentPage !== 'auth') {
         setCurrentPage('settings');
@@ -106,20 +109,21 @@ const AppContent = () => {
       <div className="bg-[#0A0A0A] text-[#F5F5F5] antialiased selection:bg-purple-500/30 selection:text-white flex flex-col min-h-screen">
         {showBootMsg && !authError && <SystemBootNotification onComplete={() => setShowBootMsg(false)} />}
         {systemToast && <Toast message={systemToast} onClose={() => systemToast && setSystemToast(null)} />}
-        
-        <Header 
-            navigateTo={navigateTo} 
-            currentPage={currentPage} 
+
+        <Header
+            navigateTo={navigateTo}
+            currentPage={currentPage}
             onOpenCommandBar={() => setIsCommandBarOpen(true)}
             isSecretMode={isSecretMode}
         />
-        
-        <SecondaryHeader 
-            currentPage={currentPage} 
+
+        <SecondaryHeader
+            currentPage={currentPage}
             navigateTo={navigateTo}
         />
-        
+
         <main key={currentPage} className="page-fade-in flex-grow">
+          <Suspense fallback={<LoadingScreen />}>
           {currentPage === 'home' && <Home navigateTo={navigateTo} />}
           {currentPage === 'campaign' && <Campaign navigateTo={navigateTo} />}
           {currentPage === 'meisterwerk' && <Meisterwerk navigateTo={navigateTo} />}
@@ -170,14 +174,15 @@ const AppContent = () => {
           {currentPage === 'privacy' && <Legal type="privacy" navigateTo={navigateTo} />}
           {currentPage === 'terms' && <Legal type="terms" navigateTo={navigateTo} />}
           {currentPage === 'ethics' && <Legal type="ethics" navigateTo={navigateTo} />}
-          
+
           {/* Tenant & BYOK */}
           {currentPage === 'auth' && <Auth navigateTo={navigateTo} />}
           {currentPage === 'settings' && <Settings navigateTo={navigateTo} />}
+          </Suspense>
         </main>
-        
+
         <Footer navigateTo={navigateTo} />
-        
+
         {isCommandBarOpen && <CommandBar isOpen={isCommandBarOpen} onClose={() => setIsCommandBarOpen(false)} navigateTo={navigateTo} />}
       </div>
   );
@@ -186,10 +191,12 @@ const AppContent = () => {
 export default function App() {
   return (
     <TasksProvider>
-      <Routes>
-        <Route path="/portfolio/*" element={<PortfolioApp />} />
-        <Route path="*" element={<AppContent />} />
-      </Routes>
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes>
+          <Route path="/portfolio/*" element={<PortfolioApp />} />
+          <Route path="*" element={<AppContent />} />
+        </Routes>
+      </Suspense>
     </TasksProvider>
   );
 }
