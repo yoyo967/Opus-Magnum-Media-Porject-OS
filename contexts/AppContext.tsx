@@ -4,7 +4,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { MASTERPLAN_HIERARCHY, MasterplanNode } from '../masterplanData';
 import { setActiveGeminiKey } from '@/utils/geminiClient';
 import { signInWithCustomToken, signOut } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { auth, db } from '../services/firebase';
+import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch } from 'firebase/firestore';
 
 // --- INTERFACES ---
 export interface User {
@@ -372,7 +373,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
     }, []);
 
-    // DATA PERSISTENCE: LOAD
+    // DATA PERSISTENCE: LOAD FROM LOCAL STORAGE (OFFLINE/NOT LOGGED IN)
     useEffect(() => {
         if (!user || isOfflineMode) {
             const load = (key: string, setter: any, defaultVal?: any) => {
@@ -398,6 +399,158 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             load('opus_strategyBrief', setStrategyBrief, null);
             load('opus_credits', setCredits, 500);
             load('opus_geminiApiKey', setGeminiApiKey, null);
+        }
+    }, [user, isOfflineMode]);
+
+    // DATA PERSISTENCE: SYNC WITH FIRESTORE (ONLINE & LOGGED IN)
+    useEffect(() => {
+        if (user && !isOfflineMode) {
+            const uid = user.uid;
+
+            // 1. Sync tasks (P1.4)
+            const tasksRef = collection(db, 'users', uid, 'tasks');
+            const unsubscribeTasks = onSnapshot(tasksRef, (snapshot) => {
+                const fetchedTasks: Task[] = [];
+                snapshot.forEach((doc) => {
+                    fetchedTasks.push(doc.data() as Task);
+                });
+                fetchedTasks.sort((a, b) => b.id - a.id);
+                setTasks(fetchedTasks.length > 0 ? fetchedTasks : initialTasks);
+            });
+
+            // 2. Sync documents (P1.4)
+            const docsRef = collection(db, 'users', uid, 'documents');
+            const unsubscribeDocs = onSnapshot(docsRef, (snapshot) => {
+                const fetchedDocs: Document[] = [];
+                snapshot.forEach((doc) => {
+                    fetchedDocs.push(doc.data() as Document);
+                });
+                setDocuments(fetchedDocs.length > 0 ? fetchedDocs : initialDocuments);
+            });
+
+            // 3. Sync personas (P1.4)
+            const personasRef = collection(db, 'users', uid, 'personas');
+            const unsubscribePersonas = onSnapshot(personasRef, (snapshot) => {
+                const fetchedPersonas: Persona[] = [];
+                snapshot.forEach((doc) => {
+                    fetchedPersonas.push(doc.data() as Persona);
+                });
+                setPersonas(fetchedPersonas);
+            });
+
+            // 4. Sync logs (P1.4)
+            const logsRef = collection(db, 'users', uid, 'logs');
+            const unsubscribeLogs = onSnapshot(logsRef, (snapshot) => {
+                const fetchedLogs: SystemLogEntry[] = [];
+                snapshot.forEach((doc) => {
+                    fetchedLogs.push(doc.data() as SystemLogEntry);
+                });
+                fetchedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+                setSystemLogs(fetchedLogs.slice(0, 50));
+            });
+
+            // 5. Load user root settings (API key, profile, credits)
+            const userDocRef = doc(db, 'users', uid);
+            const unsubscribeUserDoc = onSnapshot(userDocRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.geminiApiKey) setGeminiApiKey(data.geminiApiKey);
+                    if (data.profile) setUserProfile(data.profile);
+                    if (data.credits !== undefined) setCredits(data.credits);
+                }
+            });
+
+            return () => {
+                unsubscribeTasks();
+                unsubscribeDocs();
+                unsubscribePersonas();
+                unsubscribeLogs();
+                unsubscribeUserDoc();
+            };
+        }
+    }, [user, isOfflineMode]);
+
+    // MIGRATION ASSISTANT: LOCAL STORAGE TO FIRESTORE (ONE-TIME SYNCHRONIZATION)
+    useEffect(() => {
+        if (user && !isOfflineMode) {
+            const uid = user.uid;
+
+            const runMigration = async () => {
+                try {
+                    // Check tasks
+                    const tasksRef = collection(db, 'users', uid, 'tasks');
+                    const tasksSnapshot = await getDocs(tasksRef);
+                    if (tasksSnapshot.empty) {
+                        const localTasksStr = window.localStorage.getItem('opus_tasks');
+                        if (localTasksStr) {
+                            const localTasks: Task[] = JSON.parse(localTasksStr);
+                            const batch = writeBatch(db);
+                            localTasks.forEach(task => {
+                                const docRef = doc(db, 'users', uid, 'tasks', String(task.id));
+                                batch.set(docRef, task);
+                            });
+                            await batch.commit();
+                            addSystemLog(`Migrated ${localTasks.length} tasks to Firestore.`, 'System', 'success');
+                        }
+                    }
+
+                    // Check documents
+                    const docsRef = collection(db, 'users', uid, 'documents');
+                    const docsSnapshot = await getDocs(docsRef);
+                    if (docsSnapshot.empty) {
+                        const localDocsStr = window.localStorage.getItem('opus_documents');
+                        if (localDocsStr) {
+                            const localDocs: Document[] = JSON.parse(localDocsStr);
+                            const batch = writeBatch(db);
+                            localDocs.forEach(docObj => {
+                                const docRef = doc(db, 'users', uid, 'documents', docObj.id);
+                                batch.set(docRef, docObj);
+                            });
+                            await batch.commit();
+                            addSystemLog(`Migrated ${localDocs.length} documents to Firestore.`, 'System', 'success');
+                        }
+                    }
+
+                    // Check personas
+                    const personasRef = collection(db, 'users', uid, 'personas');
+                    const personasSnapshot = await getDocs(personasRef);
+                    if (personasSnapshot.empty) {
+                        const localPersonasStr = window.localStorage.getItem('opus_personas');
+                        if (localPersonasStr) {
+                            const localPersonas: Persona[] = JSON.parse(localPersonasStr);
+                            const batch = writeBatch(db);
+                            localPersonas.forEach(persona => {
+                                const docRef = doc(db, 'users', uid, 'personas', String(persona.id));
+                                batch.set(docRef, persona);
+                            });
+                            await batch.commit();
+                            addSystemLog(`Migrated ${localPersonas.length} personas to Firestore.`, 'System', 'success');
+                        }
+                    }
+
+                    // Check user root configs (API key, credits, profile)
+                    const userDocRef = doc(db, 'users', uid);
+                    const userDocSnapshot = await getDoc(userDocRef);
+                    if (!userDocSnapshot.exists()) {
+                        const localApiKey = window.localStorage.getItem('opus_geminiApiKey');
+                        const localCredits = window.localStorage.getItem('opus_credits');
+                        const localProfile = window.localStorage.getItem('opus_userProfile');
+
+                        const initData: any = {};
+                        if (localApiKey) initData.geminiApiKey = JSON.parse(localApiKey);
+                        if (localCredits) initData.credits = JSON.parse(localCredits);
+                        if (localProfile) initData.profile = JSON.parse(localProfile);
+
+                        await setDoc(userDocRef, initData, { merge: true });
+                        addSystemLog("Migrated user settings to Firestore.", 'System', 'success');
+                    }
+                } catch (e) {
+                    console.error("Migration to Firestore failed:", e);
+                    addSystemLog("Migration to Firestore failed. Local cache active.", 'System', 'warning');
+                }
+            };
+
+            runMigration();
         }
     }, [user, isOfflineMode]);
 
@@ -515,19 +668,28 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     const addSystemLog = (message: string, agent: string, type: SystemLogEntry['type'] = 'info') => {
+        const newLogId = Date.now();
         const newLog: SystemLogEntry = {
-            id: Date.now(),
+            id: newLogId,
             timestamp: new Date().toISOString(),
             message,
             agent,
             type
         };
         setSystemLogs(prev => [newLog, ...prev].slice(0, 50));
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid, 'logs', String(newLogId));
+            setDoc(docRef, newLog).catch(err => console.error("Firestore addSystemLog failed:", err));
+        }
     };
 
     const updateUserProfile = (profile: UserProfile) => {
         setUserProfile(profile);
         addSystemLog(`User Profile Updated: ${profile.name} assigned as ${profile.role}.`, 'System', 'success');
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid);
+            setDoc(docRef, { profile }, { merge: true }).catch(err => console.error("Firestore updateUserProfile failed:", err));
+        }
     };
 
     const addTask = (title: string, description: string, imageUrl?: string, isSystemGenerated = false, audioUrl?: string, recommendedTool?: string): number => {
@@ -546,6 +708,10 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         setTasks(prev => [newTask, ...prev]);
         addSystemLog(`Task created: "${title}"`, isSystemGenerated ? 'AURORA' : 'System');
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid, 'tasks', String(newTaskId));
+            setDoc(docRef, newTask).catch(err => console.error("Firestore addTask failed:", err));
+        }
         return newTaskId;
     };
     
@@ -565,19 +731,26 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
     
     const updateTask = (taskId: number, updates: Partial<Task>) => {
+        let updatedTaskObj: Task | null = null;
         setTasks(prev => prev.map(task => {
             if (task.id === taskId) {
                 const newVersionHistory = [...(task.versionHistory || [])];
-                    if (updates.imageUrl && task.imageUrl && updates.imageUrl !== task.imageUrl) {
+                if (updates.imageUrl && task.imageUrl && updates.imageUrl !== task.imageUrl) {
                     newVersionHistory.push({ type: 'image', url: task.imageUrl, timestamp: new Date().toISOString() });
                 }
                 if (updates.status === 'done' && task.status !== 'done') {
-                        addSystemLog(`Task completed: "${task.title}"`, 'System', 'success');
+                    addSystemLog(`Task completed: "${task.title}"`, 'System', 'success');
                 }
-                return { ...task, ...updates, versionHistory: newVersionHistory };
+                updatedTaskObj = { ...task, ...updates, versionHistory: newVersionHistory };
+                return updatedTaskObj;
             }
             return task;
         }));
+
+        if (user && !isOfflineMode && updatedTaskObj) {
+            const docRef = doc(db, 'users', user.uid, 'tasks', String(taskId));
+            setDoc(docRef, updatedTaskObj).catch(err => console.error("Firestore updateTask failed:", err));
+        }
     };
 
     const addExperiment = (experimentData: Omit<Experiment, 'id'>): Experiment => {
@@ -595,15 +768,27 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     const addDocument = (title: string, content: string, category: Document['category']) => {
-        const newDoc: Document = { id: `doc_${Date.now()}`, title, content, category, createdAt: new Date().toISOString() };
+        const docId = `doc_${Date.now()}`;
+        const newDoc: Document = { id: docId, title, content, category, createdAt: new Date().toISOString() };
         setDocuments(prev => [newDoc, ...prev]);
         addSystemLog(`New Document archived: "${title}"`, 'Academy');
+
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid, 'documents', docId);
+            setDoc(docRef, newDoc).catch(err => console.error("Firestore addDocument failed:", err));
+        }
     };
 
     const addPersona = (persona: Omit<Persona, 'id'>) => {
-        const newPersona: Persona = { id: Date.now(), ...persona };
+        const newPersonaId = Date.now();
+        const newPersona: Persona = { id: newPersonaId, ...persona };
         setPersonas(prev => [newPersona, ...prev]);
         addSystemLog(`Persona created: "${persona.name}"`, 'Persona');
+
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid, 'personas', String(newPersonaId));
+            setDoc(docRef, newPersona).catch(err => console.error("Firestore addPersona failed:", err));
+        }
     };
 
     const indexTaskAsset = async (taskId: number) => {
@@ -734,9 +919,17 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addSystemLog(`Resources added: +${amount} Credits`, 'System', 'success');
     };
 
+    const changeGeminiApiKey = (key: string) => {
+        setGeminiApiKey(key);
+        if (user && !isOfflineMode) {
+            const docRef = doc(db, 'users', user.uid);
+            setDoc(docRef, { geminiApiKey: key }, { merge: true }).catch(err => console.error("Firestore setGeminiApiKey failed:", err));
+        }
+    };
+
     return (
         <TasksContext.Provider value={{ 
-            user, login, register, logout, geminiApiKey, setGeminiApiKey, authError, dismissAuthError, enableOfflineMode, isOfflineMode, 
+            user, login, register, logout, geminiApiKey, setGeminiApiKey: changeGeminiApiKey, authError, dismissAuthError, enableOfflineMode, isOfflineMode, 
             tasks, addTask, addMultipleTasks, setTasks, updateTask, publishAndAnalyzeTask, 
             strategyBrief, setStrategyBrief, campaignBrief, setCampaignBrief, toolInput, setToolInput, 
             optimizationContext, setOptimizationContext, documents, addDocument, indexTaskAsset, 
