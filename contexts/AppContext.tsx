@@ -6,6 +6,7 @@ import { setActiveGeminiKey } from '@/utils/geminiClient';
 import { signInWithCustomToken, signOut } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch } from 'firebase/firestore';
+import { ACTIVE_TENANT } from '../tenants';
 
 // --- INTERFACES ---
 export interface User {
@@ -646,6 +647,24 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`User logged in: ${email}`, "System", "success");
             
+            // Fetch shared API key if active tenant uses shared strategy
+            if (ACTIVE_TENANT.keyStrategy === 'shared') {
+                try {
+                    const keyRes = await fetch(`${API_URL}/api/tenant/shared-key`, {
+                        headers: { 'Authorization': `Bearer ${data.token}` }
+                    });
+                    if (keyRes.ok) {
+                        const keyData = await keyRes.json();
+                        if (keyData.geminiApiKey) {
+                            setGeminiApiKey(keyData.geminiApiKey);
+                            addSystemLog("Shared Gemini API key loaded from secure backend.", "System", "success");
+                        }
+                    }
+                } catch (keyErr) {
+                    console.error("Failed to load shared API key:", keyErr);
+                }
+            }
+
             if (data.firebaseToken) {
                 try {
                     await signInWithCustomToken(auth, data.firebaseToken);
@@ -679,6 +698,24 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`New tenant initialized: ${email}`, "System", "success");
             
+            // Fetch shared API key if active tenant uses shared strategy
+            if (ACTIVE_TENANT.keyStrategy === 'shared') {
+                try {
+                    const keyRes = await fetch(`${API_URL}/api/tenant/shared-key`, {
+                        headers: { 'Authorization': `Bearer ${data.token}` }
+                    });
+                    if (keyRes.ok) {
+                        const keyData = await keyRes.json();
+                        if (keyData.geminiApiKey) {
+                            setGeminiApiKey(keyData.geminiApiKey);
+                            addSystemLog("Shared Gemini API key loaded from secure backend.", "System", "success");
+                        }
+                    }
+                } catch (keyErr) {
+                    console.error("Failed to load shared API key:", keyErr);
+                }
+            }
+
             if (data.firebaseToken) {
                 try {
                     await signInWithCustomToken(auth, data.firebaseToken);
@@ -698,6 +735,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const logout = async () => {
         try {
             setUser(null);
+            setGeminiApiKey(null);
             window.localStorage.removeItem('opus_localUser');
             setAuthError(null);
             try {

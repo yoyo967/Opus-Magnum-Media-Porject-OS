@@ -10,7 +10,8 @@ gcloud run deploy opus-magnum-ai-backend `
     --region europe-west3 `
     --allow-unauthenticated `
     --project opus-magnum-ai `
-    --port 8080
+    --port 8080 `
+    --set-secrets GEMINI_API_KEY=mirrou-gemini-key:latest
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Deployment des Backends nach europe-west3 erfolgreich abgeschlossen." -ForegroundColor Green

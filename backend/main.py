@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import uvicorn
 import os
@@ -64,6 +65,20 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+# Bearer Token Auth Helper
+security = HTTPBearer()
+
+def get_current_user_email(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token credentials")
+        return email
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid authorization token")
+
 def mint_firebase_token(uid: str):
     """Best-effort Firebase Custom Token fuer den Client (signInWithCustomToken).
     Faellt sanft auf None zurueck, wenn IAM/Setup fehlt -> Client nutzt dann localStorage."""
@@ -80,6 +95,13 @@ class AuthRequest(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "operational", "system": "OPUS MAGNUM AI"}
+
+@app.get("/api/tenant/shared-key")
+def get_shared_key(email: str = Depends(get_current_user_email)):
+    shared_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("MIRROU_GEMINI_KEY")
+    if not shared_key:
+        raise HTTPException(status_code=404, detail="Shared Gemini API Key not configured on this environment")
+    return {"geminiApiKey": shared_key}
 
 @app.post("/api/auth/login")
 def login(request: AuthRequest):
