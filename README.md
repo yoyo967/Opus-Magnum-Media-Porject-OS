@@ -101,8 +101,8 @@ Vollständiger Blueprint: [`opus-magnum-project-os.md`](https://github.com/yoyo9
 ## 4. Auth-Flow & Datenmodell
 
 ### Auth-Flow (Backend-Token + Firebase-Custom-Token-Brücke)
-1. **Register/Login:** `POST /api/auth/{register,login}` mit `{email, password}` (bcrypt-Hash, in `tenants`-Doc).
-2. Backend antwortet mit: **App-JWT** (HS256, 7 Tage, signiert mit `JWT_SECRET` aus Secret Manager), `tenant_id`, `email` und **`firebaseToken`** (Firebase Custom Token, `uid = tenant_id`).
+1. **Register/Login:** `POST /api/auth/{register,login}` mit `{email, password}` → Credentials in **`accounts/{uid}`** (bcrypt-Hash). **`uid`** = pro Person (sanitierte E-Mail); **`tenant_id`** = `mirrou` für Team-Mails (Allowlist `MIRROU_TEAM_EMAILS`), sonst eigener Tenant. Mitgliedschaft `tenants/{tid}/members/{uid}` + Tenant-Doc werden serverseitig angelegt.
+2. Backend antwortet mit: **App-JWT** (HS256, 7 Tage, `JWT_SECRET` aus Secret Manager), `uid`, `tenant_id`, `email` und **`firebaseToken`** (Firebase Custom Token mit der **per-Person-`uid`**, damit private `users/{uid}` nie kollidieren).
 3. Client ruft **`signInWithCustomToken(firebaseToken)`** → Firebase Auth → `request.auth.uid == tenant_id` → erfüllt `firestore.rules`.
 4. Client liest/schreibt Firestore **direkt** (durch Rules abgesichert): Shared unter `tenants/{tid}`, privat unter `users/{uid}`.
 5. **Geteilter Gemini-Key:** `GET /api/tenant/shared-key` (JWT-geschützt) → nur im Client-**Speicher**, nie auf Platte/DB.
@@ -110,6 +110,7 @@ Vollständiger Blueprint: [`opus-magnum-project-os.md`](https://github.com/yoyo9
 ### Firestore-Datenmodell (`opus-eu`, `europe-west3`)
 | Pfad | Inhalt | Zugriff (Rules) |
 |---|---|---|
+| `accounts/{uid}` | **Credentials:** email, bcrypt-Hash, `tenant_id` | nur Server (Admin SDK) |
 | `users/{uid}` | **privat:** `geminiApiKey` (verschlüsselt), `profile`, `credits` | nur Eigentümer (`request.auth.uid == uid`) |
 | `tenants/{tid}` | **shared workspace:** `tasks`, `documents`, `personas`, `systemLogs`, `briefs/{strategy,campaign}` | nur Tenant-Mitglieder |
 | `tenants/{tid}/members/{uid}` | Mitgliedschaft (Rolle, Permissions) | lesen: Mitglieder · **schreiben: nur Server (Admin SDK)** |
@@ -173,8 +174,8 @@ Basis-URL (live): `https://opus-magnum-ai-backend-923137317598.europe-west3.run.
 | Methode | Pfad | Auth | Body / Antwort |
 |---|---|---|---|
 | `GET` | `/health` | — | `{status, system}` |
-| `POST` | `/api/auth/register` | — | `{email,password}` → `{token, tenant_id, email, firebaseToken, status}` |
-| `POST` | `/api/auth/login` | — | `{email,password}` → `{token, tenant_id, email, firebaseToken}` |
+| `POST` | `/api/auth/register` | — | `{email,password}` → `{token, uid, tenant_id, email, firebaseToken, status}` (Team-Mail → `tenant_id:"mirrou"`) |
+| `POST` | `/api/auth/login` | — | `{email,password}` → `{token, uid, tenant_id, email, firebaseToken}` |
 | `GET` | `/api/tenant/shared-key` | **Bearer JWT** | → `{geminiApiKey}` (aus Secret Manager; nur In-Memory beim Client) |
 | `POST` | `/api/lead` | — | `{name,email,brand,website?,ad_spend?,message,consent,company_website?}` → `{status,message}` |
 | `GET` | `/api/leads` | **Bearer JWT** | → `{leads:[…], count}` — Lead-Inbox; liest `tenants/mirrou/leads` via Admin SDK (umgeht Rules). *Aktuell jeder Auth-User; bei SaaS auf mirrou-Mitglieder/Admin einschränken.* |
@@ -258,6 +259,7 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 | `GEMINI_API_KEY` | Secret Manager `mirrou-gemini-key` | geteilter Gemini-Key (Tenant `shared`) |
 | `JWT_SECRET` | Secret Manager `opus-jwt-secret` | JWT-Signing (HS256). **Pflicht in Prod** |
 | `FIREBASE_PROJECT_ID` | optional (Default `studio-4188712377-b3681`) | Custom-Token-Minting |
+| `MIRROU_TEAM_EMAILS` | optional (Default = die 4 Team-Mails im Code) | Komma-Liste der E-Mails, die den geteilten `mirrou`-Tenant teilen |
 | `VITE_API_URL` | [`.env.production`](.env.production) (öffentlich) | Backend-URL fürs Frontend |
 
 **Niemals** echte Secrets committen. Firebase-Web-`apiKey` in `services/firebase.ts` ist **kein** Secret (öffentlicher Client-Identifier; Sicherheit liegt in `firestore.rules`). ⚠️ `.gitignore` deckt `.env*` aktuell **nicht** breit ab (`.env.production` ist absichtlich getrackt, enthält nur die öffentliche URL) — keine echten `.env`-Dateien hinzufügen.
@@ -288,6 +290,7 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 | **—** | Mirrou-Website-Lead-Pipeline (`/api/lead` → Firestore EU) **E2E verifiziert** | ✅ 2026-06-04 |
 | **—** | Backend-Härtung: CORS-Allowlist + Rate-Limiting | ✅ 2026-06-04 (rev `00012`) |
 | **—** | **Lead-Inbox** (v1 View + `GET /api/leads` · v2 Status-Pipeline + `PATCH /api/leads/{id}`) | ✅ 2026-06-04 (BE `00015` / FE `00012`) |
+| **—** | **Geteilter Mirrou-Tenant** (Team-Allowlist → 1 Workspace, per-Person-`uid`, `accounts`-Collection) | ✅ 2026-06-04 (BE `00018` / FE `00013`) |
 | **—** | Auth-Fix: `bcrypt <4.1` — `register` **und** echtes `login` warfen 500 | ✅ 2026-06-04 |
 
 **Offen / Roadmap:**
