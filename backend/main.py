@@ -212,7 +212,7 @@ def health_check():
     return {"status": "operational", "system": "OPUS MAGNUM AI"}
 
 @app.get("/api/tenant/shared-key")
-def get_shared_key(email: str = Depends(get_current_user_email)):
+def get_shared_key(email: str = Depends(require_mirrou_member)):
     shared_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("MIRROU_GEMINI_KEY")
     if not shared_key:
         raise HTTPException(status_code=404, detail="Shared Gemini API Key not configured on this environment")
@@ -350,6 +350,10 @@ def register(request: Request, auth: AuthRequest):
         raise HTTPException(status_code=500, detail="Database not initialized")
 
     email = auth.email.strip().lower()
+    # Registrierung ist INVITE-ONLY: nur Mails aus der Allowlist (MIRROU_TEAM_EMAILS).
+    # Verhindert, dass Fremde Accounts anlegen und den geteilten Gemini-Key abgreifen.
+    if email not in TEAM_EMAILS:
+        raise HTTPException(status_code=403, detail="Registration is invite-only.")
     uid = _uid_for(email)
     acct_ref = db.collection('accounts').document(uid)
     if acct_ref.get().exists:
