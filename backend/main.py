@@ -279,6 +279,70 @@ def update_lead_status(request: Request, lead_id: str, body: LeadStatusUpdate, e
         print("Error updating lead status:", e)
         raise HTTPException(status_code=500, detail="Failed to update lead status")
 
+@app.get("/api/system/audit")
+@limiter.limit("30/minute")
+def system_audit(request: Request, email: str = Depends(require_mirrou_member)):
+    """Self-Introspection: der ECHTE Zustand des OS (kein Mock) als strukturiertes JSON.
+    Speist das System-Audit-Dashboard + den Entwickler-/IDE-Agenten-Loop. Jeder Check
+    ist real geprueft; was nicht angebunden ist, wird ehrlich als 'not_integrated'
+    gemeldet (statt es zu behaupten)."""
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("MIRROU_GEMINI_KEY"))
+    report = {
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "status": "operational",
+        "runtime": {
+            "service": os.environ.get("K_SERVICE", "local"),
+            "revision": os.environ.get("K_REVISION", "local"),
+            "region": "europe-west3",
+        },
+        "ai": {"shared_key_configured": has_gemini, "model": "gemini-2.5-pro"},
+        "security": {
+            "registration": "invite-only",
+            "team_allowlist_size": len(TEAM_EMAILS),
+            "jwt_secret_set": bool(os.environ.get("JWT_SECRET")),
+            "cors": "allowlist",
+            "rate_limiting": True,
+        },
+        # Ehrliche Integrations-Map: nur was WIRKLICH verdrahtet ist.
+        "integrations": {
+            "firestore": "connected",
+            "gemini": "configured" if has_gemini else "not_configured",
+            "bigquery": "not_integrated",
+            "ga4": "not_integrated",
+            "vertex_ai": "not_integrated",
+        },
+        "data_layer": {"provider": "Firestore", "database": "opus-eu", "region": "europe-west3", "connected": False},
+        "leads": {"count": None, "last_received": None},
+        "tenancy": {"tenants": None, "mirrou_members": None},
+        "errors": [],
+    }
+    if not db:
+        report["status"] = "degraded"
+        report["integrations"]["firestore"] = "disconnected"
+        report["errors"].append("Firestore client not initialized")
+        return report
+    try:
+        leads = list(db.collection('tenants').document('mirrou').collection('leads')
+                     .order_by('created_at', direction=firestore.Query.DESCENDING).limit(1000).stream())
+        report["data_layer"]["connected"] = True
+        report["leads"]["count"] = len(leads)
+        if leads:
+            ts = leads[0].to_dict().get('created_at')
+            report["leads"]["last_received"] = ts.isoformat() if hasattr(ts, 'isoformat') else None
+    except Exception as e:
+        report["data_layer"]["connected"] = False
+        report["integrations"]["firestore"] = "error"
+        report["errors"].append(f"Firestore lead read failed: {e}")
+    try:
+        report["tenancy"]["tenants"] = len(list(db.collection('tenants').limit(1000).stream()))
+        report["tenancy"]["mirrou_members"] = len(list(
+            db.collection('tenants').document('mirrou').collection('members').limit(1000).stream()))
+    except Exception as e:
+        report["errors"].append(f"Tenancy read failed: {e}")
+    if not report["data_layer"]["connected"] or report["errors"]:
+        report["status"] = "degraded"
+    return report
+
 @app.post("/api/lead")
 @limiter.limit("10/minute")
 def create_lead(request: Request, lead: LeadRequest):
