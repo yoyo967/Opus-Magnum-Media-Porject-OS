@@ -279,6 +279,8 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 
 ## 14. Status, Phasen & Roadmap
 
+> **Strategische Roadmap (North Star + L1→L5):** [`docs/ROADMAP.md`](docs/ROADMAP.md) — Entscheidung **Mirrou-first** (erst Tenant #1 perfektionieren, SaaS später). Nächster Sprung: **L2 Kontext-Schicht**.
+
 | Phase | Inhalt | Status |
 |---|---|---|
 | **1** | Kritische Fixes: BYOK-Helper, Modell-Rename `gemini-2.5-pro`, Code-Splitting (1,45 MB → 82 Chunks), 403/404-Guard, `firestore.rules` | ✅ [ADR-1](docs/adr-1.md) |
