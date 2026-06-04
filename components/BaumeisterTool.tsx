@@ -4,6 +4,40 @@ import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toast } from './Toast';
 import { buildMirrouContext } from '../tenants';
+import OutputActions from './OutputActions';
+
+// Serialisiert ein Brief-Objekt zu Markdown (für Copy/Download/PDF/Workspace/Task).
+const briefToMarkdown = (b: any): string => {
+  if (!b) return '';
+  const out: string[] = [`# Creative Brief — ${b.brand_name || ''}`.trim()];
+  if (b.campaign_goal) out.push('', '## Kampagnen-Ziel', b.campaign_goal);
+  if (b.target_audience) out.push('', '## Zielgruppe', b.target_audience);
+  if (b.ai_level) out.push('', '## AI-Einsatz-Level', `**${b.ai_level.level || ''}** — ${b.ai_level.rationale || ''}`);
+  if (b.hooks?.length) {
+    out.push('', '## Hook-Hypothesen');
+    b.hooks.forEach((h: any, i: number) => {
+      out.push('', `### Hook ${i + 1}${h.hook_type ? ` — ${h.hook_type}` : ''}`);
+      if (h.visual_idea) out.push(`**Visual:** ${h.visual_idea}`);
+      if (h.copy_text) out.push(`**Copy:** ${h.copy_text}`);
+      if (h.rationale) out.push(`**Rationale:** ${h.rationale}`);
+    });
+  }
+  if (b.stages?.length) {
+    out.push('', '## Execution Stages');
+    b.stages.forEach((s: any) => out.push(`- **${s.stage || ''}:** ${s.description || ''}`));
+  }
+  if (b.formats?.length) {
+    out.push('', '## Format Specs');
+    b.formats.forEach((f: any) => out.push(`- **${f.channel || ''}:** ${f.specs || ''}`));
+  }
+  if (b.compliance_check) {
+    out.push('', '## Compliance (HCVO & EU AI Act)');
+    if (b.compliance_check.hcvo_risk) out.push(`**HCVO-Risiko:** ${b.compliance_check.hcvo_risk}`);
+    const badges = b.compliance_check.ai_act_required_badges;
+    if (badges?.length) out.push(`**AI-Act-Badges:** ${badges.join(', ')}`);
+  }
+  return out.join('\n');
+};
 
 // --- ICONS ---
 const CheckIcon: React.FC = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -551,6 +585,11 @@ export const BaumeisterTool: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
+                                    <OutputActions
+                                        content={briefToMarkdown(briefData)}
+                                        title={`Creative Brief – ${briefData.brand_name || briefBrand}`}
+                                        category="strategy"
+                                    />
                                 </div>
                             ) : (
                                 <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-6 font-sans text-white">
