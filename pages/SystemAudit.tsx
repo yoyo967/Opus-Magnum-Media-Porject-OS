@@ -68,8 +68,8 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                 "Connecting to Neural Backbone...",
                 "Analyzing Task Graph...",
                 `Identified ${tasks.length} active process nodes...`,
-                "Checking Data Warehouse Connection...",
-                "BigQuery Uplink established (Sandbox Mode)...", // Updated to reflect BigQuery status
+                "Checking data layer connection...",
+                "Firestore connected (EU · europe-west3)...",
                 "Verifying Budget Integrity...",
                 "Scanning Agent Interactions...",
                 `Aggregating ${systemLogs.length} log entries...`,
@@ -114,7 +114,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                 - Tasks: ${stats.totalTasks} total (${stats.completedTasks} done, ${stats.inProgress} active).
                 - Budget: €${stats.spent} spent of €${stats.budgeted} planned.
                 - Active Campaign: ${stats.campaignActive ? 'Yes' : 'No'}
-                - Data Layer: BigQuery Sandbox Connected.
+                - Data Layer: Firestore (EU, europe-west3) connected.
                 
                 Generate 4 audit sections:
                 1. **Execution Velocity:** Analyze task completion rate and flow.
