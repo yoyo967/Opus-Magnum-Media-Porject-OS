@@ -179,7 +179,7 @@ Basis-URL (live): `https://opus-magnum-ai-backend-923137317598.europe-west3.run.
 | `POST` | `/api/lead` | — | `{name,email,brand,website?,ad_spend?,message,consent,company_website?}` → `{status,message}` |
 
 **`/api/lead`-Logik:** Honeypot (`company_website` → Spam-Sink, 200), Pflichtfelder + `consent` erzwungen, Schreiben nach `tenants/mirrou/leads` via Admin SDK (`SERVER_TIMESTAMP`, `status:"new"`).
-**CORS:** aktuell `allow_origins=["*"]` — 🟡 vor breiter Produktion auf echte Origins eingrenzen (`mirrou.studio`, `app.mirrou.studio`, Cockpit-URL, `localhost`).
+**CORS:** First-Party-Allowlist (`mirrou.studio`, `www`/`app.`, `.web.app`, Cockpit, `localhost`), überschreibbar via `ALLOWED_ORIGINS`-Env. **Rate-Limiting** (slowapi, keyed auf `X-Forwarded-For`): `/api/lead` 10/min · Login 10/min · Register 5/min.
 
 ---
 
@@ -269,7 +269,7 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 - **`firestore.rules`:** default-deny; `users/{uid}` owner-only; `tenants/{tid}` member-gated; `members` nur serverseitig schreibbar.
 - **EU-Datenresidenz:** Firestore `opus-eu` = **`europe-west3`** (verifiziert), nicht der `us-central1`-Default. Alle PII (Leads, CRM, Keys) bleiben in der EU.
 - **EU AI Act:** KI-generierte Assets werden gekennzeichnet (Labeling-Matrix: 100 % KI → „AI-Generated", 60–99 % → „AI-Assisted", <20 % → „Human-Crafted" — siehe `Auditor`).
-- 🟡 **Offen:** CORS auf echte Origins eingrenzen · Rate-Limiting (`/api/lead`, `/api/auth/login`).
+- ✅ **CORS** auf First-Party-Allowlist eingegrenzt (env-überschreibbar `ALLOWED_ORIGINS`) · ✅ **Rate-Limiting** (slowapi: `/api/lead` 10/min, Login 10/min, Register 5/min). *(Live verifiziert 2026-06-04, Rev `00012-8g9`.)*
 
 ---
 
@@ -286,7 +286,7 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 | **—** | Mirrou-Website-Lead-Pipeline (`/api/lead` → Firestore EU) **E2E verifiziert** | ✅ 2026-06-04 |
 
 **Offen / Roadmap:**
-- 🟡 Backend härten: CORS eingrenzen · Rate-Limiting.
+- ✅ Backend gehärtet: CORS-Allowlist + Rate-Limiting (Rev `00012-8g9`, 2026-06-04).
 - 🟡 Lead-Benachrichtigung (Brevo, EU) + Lead-Inbox-UI (Leads liegen aktuell still in Firestore).
 - 🟡 P1.5 Model-Guard auf **alle** ~40 Tools ausrollen (Helper steht, kritische Tools verdrahtet).
 - 🔵 SaaS-Seite B: Mandanten-Onboarding, `byok`/`metered`-Pfad, Billing.
