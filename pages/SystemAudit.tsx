@@ -13,6 +13,45 @@ const DownloadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" v
 const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>;
 
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const Dot: React.FC<{ ok: boolean }> = ({ ok }) => (
+    <span className={`inline-block w-2 h-2 rounded-full ${ok ? 'bg-green-400' : 'bg-gray-600'}`} />
+);
+const Metric: React.FC<{ label: string; value: any; ok?: boolean }> = ({ label, value, ok = true }) => (
+    <div className="bg-white/5 border border-white/10 rounded px-3 py-2">
+        <div className="text-[10px] uppercase tracking-wider text-gray-500">{label}</div>
+        <div className={`text-sm ${ok ? 'text-white' : 'text-red-400'}`}>{value}</div>
+    </div>
+);
+const LiveStatePanel: React.FC<{ state: any }> = ({ state }) => {
+    if (!state) return null;
+    const ok = (v: any) => v === 'connected' || v === 'configured';
+    return (
+        <div className="bg-[#0d0d0d] border border-white/10 rounded-lg p-6 page-fade-in">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-mono uppercase tracking-widest text-green-400">⬡ Live System State <span className="text-gray-500 normal-case">(verifiziert · echt)</span></h3>
+                <span className="text-[10px] font-mono text-gray-500">rev {state.runtime?.revision} · {state.runtime?.region}</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-3">
+                {Object.entries(state.integrations || {}).map(([k, v]: any) => (
+                    <div key={k} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded px-3 py-2">
+                        <Dot ok={ok(v)} />
+                        <span className="text-gray-300 capitalize">{k.replace(/_/g, ' ')}</span>
+                        <span className="ml-auto text-[10px] text-gray-500">{String(v).replace(/_/g, ' ')}</span>
+                    </div>
+                ))}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <Metric label="Data Layer" value={state.data_layer?.connected ? `Firestore ${state.data_layer?.region}` : 'offline'} ok={!!state.data_layer?.connected} />
+                <Metric label="Leads" value={state.leads?.count ?? '—'} />
+                <Metric label="Mirrou Members" value={state.tenancy?.mirrou_members ?? '—'} />
+                <Metric label="Security" value={state.security?.registration ?? '—'} ok={!!state.security?.jwt_secret_set} />
+            </div>
+        </div>
+    );
+};
+
 interface AuditSection {
     id: string;
     title: string;
@@ -51,13 +90,14 @@ const TerminalLoader: React.FC<{ logs: string[] }> = ({ logs }) => {
 };
 
 const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateTo }) => {
-    const { tasks, systemLogs, campaignBrief, exportSystemData, importSystemData } = useTasks();
+    const { tasks, systemLogs, campaignBrief, exportSystemData, importSystemData, user } = useTasks();
     const [isScanning, setIsScanning] = useState(true);
     const [logs, setLogs] = useState<string[]>([]);
     const [auditResults, setAuditResults] = useState<AuditSection[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [selectedSection, setSelectedSection] = useState<AuditSection | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [liveState, setLiveState] = useState<any | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -93,6 +133,15 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                     campaignActive: !!campaignBrief
                 };
 
+                // Echter Self-State vom Backend (autoritativ) — erdet die KI-Analyse.
+                let live: any = null;
+                try {
+                    if (user?.token) {
+                        const r = await fetch(`${API_URL}/api/system/audit`, { headers: { Authorization: `Bearer ${user.token}` } });
+                        if (r.ok) { live = await r.json(); setLiveState(live); }
+                    }
+                } catch { /* fail soft */ }
+
                 const auditSchema = {
                     type: Type.ARRAY,
                     description: "A list of audit sections.",
@@ -114,7 +163,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                 - Tasks: ${stats.totalTasks} total (${stats.completedTasks} done, ${stats.inProgress} active).
                 - Budget: €${stats.spent} spent of €${stats.budgeted} planned.
                 - Active Campaign: ${stats.campaignActive ? 'Yes' : 'No'}
-                - Data Layer: Firestore (EU, europe-west3) connected.
+                - Verifizierter Live-Systemzustand (autoritativ, aus /api/system/audit): ${live ? JSON.stringify(live) : 'nicht verfügbar'}
                 
                 Generate 4 audit sections:
                 1. **Execution Velocity:** Analyze task completion rate and flow.
@@ -191,6 +240,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
                     </div>
                 ) : (
                     <div className="space-y-8">
+                        <LiveStatePanel state={liveState} />
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 page-fade-in">
                             {auditResults?.map((section, idx) => (
                                 <button 
