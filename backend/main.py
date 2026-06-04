@@ -7,6 +7,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import uvicorn
 import os
+import re
 import secrets
 import jwt
 from passlib.context import CryptContext
@@ -136,6 +137,41 @@ def mint_firebase_token(uid: str):
     except Exception as e:
         print("Warning: Firebase custom token minting failed:", e)
         return None
+
+# --- Multi-Tenant: Team-Allowlist -> geteilter Mirrou-Tenant -------------------
+# Bekannte Team-Mails teilen sich EINEN Workspace (tenants/mirrou); alle anderen
+# bekommen einen eigenen Tenant. uid ist immer pro Person (private Daten unter
+# users/{uid}); tenant_id ist der (ggf. geteilte) Workspace.
+MIRROU_TENANT_ID = "mirrou"
+_DEFAULT_TEAM = (
+    "denys.demyanyshyn@dci-student.org,info.ralphkindermann@gmail.com,"
+    "olhayevtushenko57@gmail.com,yildirimyahya716@gmail.com"
+)
+TEAM_EMAILS = {e.strip().lower() for e in os.environ.get("MIRROU_TEAM_EMAILS", _DEFAULT_TEAM).split(",") if e.strip()}
+
+def _uid_for(email: str) -> str:
+    """Stabile, pro-Person eindeutige uid aus der E-Mail (Firestore/Firebase)."""
+    return re.sub(r'[^a-z0-9]', '_', email.strip().lower())
+
+def _tenant_for(email: str) -> str:
+    """Team-Mails -> geteilter 'mirrou'-Tenant; sonst eigener Tenant (= uid)."""
+    e = email.strip().lower()
+    return MIRROU_TENANT_ID if e in TEAM_EMAILS else _uid_for(e)
+
+def _ensure_tenant_and_membership(tenant_id: str, uid: str, email: str):
+    """Tenant-Doc + Mitgliedschaft (members/{uid}) idempotent serverseitig anlegen.
+    firestore.rules verlangen members/{request.auth.uid} fuer Tenant-Zugriff."""
+    tenant_ref = db.collection('tenants').document(tenant_id)
+    if not tenant_ref.get().exists:
+        tenant_ref.set({"created_at": firestore.SERVER_TIMESTAMP, "label": tenant_id})
+    member_ref = tenant_ref.collection('members').document(uid)
+    if not member_ref.get().exists:
+        member_ref.set({
+            "email": email,
+            "role": "Owner",
+            "joined_at": firestore.SERVER_TIMESTAMP,
+            "permissions": ["all"],
+        })
 
 class AuthRequest(BaseModel):
     email: str
@@ -274,38 +310,24 @@ def login(request: Request, auth: AuthRequest):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
 
-    users_ref = db.collection('tenants')
-    query = users_ref.where(filter=firestore.FieldFilter('email', '==', auth.email.lower())).limit(1).stream()
-
-    user_doc = None
-    for doc in query:
-        user_doc = doc
-        break
-
-    if not user_doc:
+    email = auth.email.strip().lower()
+    uid = _uid_for(email)
+    acct = db.collection('accounts').document(uid).get()
+    if not acct.exists:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    user_data = user_doc.to_dict()
-    if not verify_password(auth.password, user_data['hashed_password']):
+    data = acct.to_dict()
+    if not verify_password(auth.password, data.get('hashed_password', '')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = create_access_token(data={"sub": auth.email.lower(), "role": "operator"})
-
-    # Ensure tenant membership document exists (backward compatibility)
-    tenant_id = user_doc.id
+    tenant_id = data.get('tenant_id') or _tenant_for(email)
     try:
-        member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
-        if not member_ref.get().exists:
-            member_ref.set({
-                "email": auth.email.lower(),
-                "role": "Owner",
-                "joined_at": firestore.SERVER_TIMESTAMP,
-                "permissions": ["all"]
-            })
+        _ensure_tenant_and_membership(tenant_id, uid, email)  # self-heal / Abwaertskompat.
     except Exception as e:
-        print("Warning: Failed to ensure tenant membership:", e)
+        print("Warning: tenant/membership ensure failed:", e)
 
-    return {"token": access_token, "tenant_id": tenant_id, "email": auth.email.lower(), "firebaseToken": mint_firebase_token(tenant_id)}
+    access_token = create_access_token(data={"sub": email, "uid": uid, "tenant_id": tenant_id, "role": "operator"})
+    return {"token": access_token, "uid": uid, "tenant_id": tenant_id, "email": email, "firebaseToken": mint_firebase_token(uid)}
 
 @app.post("/api/auth/register")
 @limiter.limit("5/minute")
@@ -313,37 +335,27 @@ def register(request: Request, auth: AuthRequest):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
 
-    users_ref = db.collection('tenants')
-    query = users_ref.where(filter=firestore.FieldFilter('email', '==', auth.email.lower())).limit(1).stream()
-
-    for doc in query:
+    email = auth.email.strip().lower()
+    uid = _uid_for(email)
+    acct_ref = db.collection('accounts').document(uid)
+    if acct_ref.get().exists:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    hashed_password = get_password_hash(auth.password)
-    tenant_data = {
-        "email": auth.email.lower(),
-        "hashed_password": hashed_password,
+    tenant_id = _tenant_for(email)  # Team-Mail -> 'mirrou' (geteilt), sonst eigener Tenant
+    acct_ref.set({
+        "email": email,
+        "hashed_password": get_password_hash(auth.password),
+        "tenant_id": tenant_id,
         "created_at": firestore.SERVER_TIMESTAMP,
-        "role": "Operator"
-    }
-
-    update_time, tenant_ref = users_ref.add(tenant_data)
-    tenant_id = tenant_ref.id
-
-    # Create tenant membership document
+        "role": "operator",
+    })
     try:
-        member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
-        member_ref.set({
-            "email": auth.email.lower(),
-            "role": "Owner",
-            "joined_at": firestore.SERVER_TIMESTAMP,
-            "permissions": ["all"]
-        })
+        _ensure_tenant_and_membership(tenant_id, uid, email)
     except Exception as e:
-        print("Warning: Failed to create tenant membership:", e)
+        print("Warning: tenant/membership setup failed:", e)
 
-    access_token = create_access_token(data={"sub": auth.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": tenant_id, "email": auth.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_id)}
+    access_token = create_access_token(data={"sub": email, "uid": uid, "tenant_id": tenant_id, "role": "operator"})
+    return {"token": access_token, "uid": uid, "tenant_id": tenant_id, "email": email, "status": "account created", "firebaseToken": mint_firebase_token(uid)}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

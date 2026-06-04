@@ -10,7 +10,8 @@ import { ACTIVE_TENANT } from '../tenants';
 
 // --- INTERFACES ---
 export interface User {
-    uid: string;
+    uid: string;            // pro Person (private Daten: users/{uid})
+    tenantId?: string;      // (ggf. geteilter) Workspace: tenants/{tenantId} — z.B. 'mirrou'
     email: string;
     displayName?: string;
     token?: string;
@@ -407,9 +408,10 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => {
         if (user && !isOfflineMode) {
             const uid = user.uid;
+            const tenantId = user.tenantId || user.uid;
 
             // 1. Sync tasks (P2.4 - Shared Tenant Workspace)
-            const tasksRef = collection(db, 'tenants', uid, 'tasks');
+            const tasksRef = collection(db, 'tenants', tenantId, 'tasks');
             const unsubscribeTasks = onSnapshot(tasksRef, (snapshot) => {
                 const fetchedTasks: Task[] = [];
                 snapshot.forEach((doc) => {
@@ -420,7 +422,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
 
             // 2. Sync documents (P2.4 - Shared Tenant Workspace)
-            const docsRef = collection(db, 'tenants', uid, 'documents');
+            const docsRef = collection(db, 'tenants', tenantId, 'documents');
             const unsubscribeDocs = onSnapshot(docsRef, (snapshot) => {
                 const fetchedDocs: Document[] = [];
                 snapshot.forEach((doc) => {
@@ -430,7 +432,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
 
             // 3. Sync personas (P2.4 - Shared Tenant Workspace)
-            const personasRef = collection(db, 'tenants', uid, 'personas');
+            const personasRef = collection(db, 'tenants', tenantId, 'personas');
             const unsubscribePersonas = onSnapshot(personasRef, (snapshot) => {
                 const fetchedPersonas: Persona[] = [];
                 snapshot.forEach((doc) => {
@@ -440,7 +442,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
 
             // 4. Sync logs (P2.4 - Shared Tenant Workspace)
-            const logsRef = collection(db, 'tenants', uid, 'logs');
+            const logsRef = collection(db, 'tenants', tenantId, 'logs');
             const unsubscribeLogs = onSnapshot(logsRef, (snapshot) => {
                 const fetchedLogs: SystemLogEntry[] = [];
                 snapshot.forEach((doc) => {
@@ -462,7 +464,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
 
             // 6. Sync strategyBrief (P2.4 - Shared Tenant Workspace)
-            const strategyBriefRef = doc(db, 'tenants', uid, 'briefs', 'strategy');
+            const strategyBriefRef = doc(db, 'tenants', tenantId, 'briefs', 'strategy');
             const unsubscribeStrategyBrief = onSnapshot(strategyBriefRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.data();
@@ -475,7 +477,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             });
 
             // 7. Sync campaignBrief (P2.4 - Shared Tenant Workspace)
-            const campaignBriefRef = doc(db, 'tenants', uid, 'briefs', 'campaign');
+            const campaignBriefRef = doc(db, 'tenants', tenantId, 'briefs', 'campaign');
             const unsubscribeCampaignBrief = onSnapshot(campaignBriefRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.data();
@@ -503,11 +505,12 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => {
         if (user && !isOfflineMode) {
             const uid = user.uid;
+            const tenantId = user.tenantId || user.uid;
 
             const runMigration = async () => {
                 try {
                     // Check tasks
-                    const tasksRef = collection(db, 'tenants', uid, 'tasks');
+                    const tasksRef = collection(db, 'tenants', tenantId, 'tasks');
                     const tasksSnapshot = await getDocs(tasksRef);
                     if (tasksSnapshot.empty) {
                         const localTasksStr = window.localStorage.getItem('opus_tasks');
@@ -515,7 +518,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localTasks: Task[] = JSON.parse(localTasksStr);
                             const batch = writeBatch(db);
                             localTasks.forEach(task => {
-                                const docRef = doc(db, 'tenants', uid, 'tasks', String(task.id));
+                                const docRef = doc(db, 'tenants', tenantId, 'tasks', String(task.id));
                                 batch.set(docRef, task);
                             });
                             await batch.commit();
@@ -524,7 +527,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check documents
-                    const docsRef = collection(db, 'tenants', uid, 'documents');
+                    const docsRef = collection(db, 'tenants', tenantId, 'documents');
                     const docsSnapshot = await getDocs(docsRef);
                     if (docsSnapshot.empty) {
                         const localDocsStr = window.localStorage.getItem('opus_documents');
@@ -532,7 +535,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localDocs: Document[] = JSON.parse(localDocsStr);
                             const batch = writeBatch(db);
                             localDocs.forEach(docObj => {
-                                const docRef = doc(db, 'tenants', uid, 'documents', docObj.id);
+                                const docRef = doc(db, 'tenants', tenantId, 'documents', docObj.id);
                                 batch.set(docRef, docObj);
                             });
                             await batch.commit();
@@ -541,7 +544,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check personas
-                    const personasRef = collection(db, 'tenants', uid, 'personas');
+                    const personasRef = collection(db, 'tenants', tenantId, 'personas');
                     const personasSnapshot = await getDocs(personasRef);
                     if (personasSnapshot.empty) {
                         const localPersonasStr = window.localStorage.getItem('opus_personas');
@@ -549,7 +552,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                             const localPersonas: Persona[] = JSON.parse(localPersonasStr);
                             const batch = writeBatch(db);
                             localPersonas.forEach(persona => {
-                                const docRef = doc(db, 'tenants', uid, 'personas', String(persona.id));
+                                const docRef = doc(db, 'tenants', tenantId, 'personas', String(persona.id));
                                 batch.set(docRef, persona);
                             });
                             await batch.commit();
@@ -558,7 +561,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check strategyBrief
-                    const strategyBriefRef = doc(db, 'tenants', uid, 'briefs', 'strategy');
+                    const strategyBriefRef = doc(db, 'tenants', tenantId, 'briefs', 'strategy');
                     const strategyBriefSnapshot = await getDoc(strategyBriefRef);
                     if (!strategyBriefSnapshot.exists()) {
                         const localStrategyStr = window.localStorage.getItem('opus_strategyBrief');
@@ -570,7 +573,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     }
 
                     // Check campaignBrief
-                    const campaignBriefRef = doc(db, 'tenants', uid, 'briefs', 'campaign');
+                    const campaignBriefRef = doc(db, 'tenants', tenantId, 'briefs', 'campaign');
                     const campaignBriefSnapshot = await getDoc(campaignBriefRef);
                     if (!campaignBriefSnapshot.exists()) {
                         const localCampaignStr = window.localStorage.getItem('opus_campaignBrief');
@@ -642,7 +645,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             
             if (!res.ok) throw new Error(data.detail || "Login failed");
             
-            const u = { uid: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
+            const u = { uid: data.uid || data.tenant_id, tenantId: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
             setUser(u);
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`User logged in: ${email}`, "System", "success");
@@ -693,7 +696,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             
             if (!res.ok) throw new Error(data.detail || "Registration failed");
             
-            const u = { uid: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
+            const u = { uid: data.uid || data.tenant_id, tenantId: data.tenant_id, email: data.email, displayName: data.email.split('@')[0], token: data.token };
             setUser(u);
             window.localStorage.setItem('opus_localUser', JSON.stringify(u));
             addSystemLog(`New tenant initialized: ${email}`, "System", "success");
@@ -768,7 +771,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         };
         setSystemLogs(prev => [newLog, ...prev].slice(0, 50));
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'tenants', user.uid, 'logs', String(newLogId));
+            const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'logs', String(newLogId));
             setDoc(docRef, newLog).catch(err => console.error("Firestore addSystemLog failed:", err));
         }
     };
@@ -799,7 +802,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTasks(prev => [newTask, ...prev]);
         addSystemLog(`Task created: "${title}"`, isSystemGenerated ? 'AURORA' : 'System');
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'tenants', user.uid, 'tasks', String(newTaskId));
+            const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'tasks', String(newTaskId));
             setDoc(docRef, newTask).catch(err => console.error("Firestore addTask failed:", err));
         }
         return newTaskId;
@@ -822,7 +825,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         if (user && !isOfflineMode) {
             const batch = writeBatch(db);
             newTasks.forEach(task => {
-                const docRef = doc(db, 'tenants', user.uid, 'tasks', String(task.id));
+                const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'tasks', String(task.id));
                 batch.set(docRef, task);
             });
             batch.commit().catch(err => console.error("Firestore addMultipleTasks failed:", err));
@@ -847,7 +850,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }));
 
         if (user && !isOfflineMode && updatedTaskObj) {
-            const docRef = doc(db, 'tenants', user.uid, 'tasks', String(taskId));
+            const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'tasks', String(taskId));
             setDoc(docRef, updatedTaskObj).catch(err => console.error("Firestore updateTask failed:", err));
         }
     };
@@ -873,7 +876,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addSystemLog(`New Document archived: "${title}"`, 'Academy');
 
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'tenants', user.uid, 'documents', docId);
+            const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'documents', docId);
             setDoc(docRef, newDoc).catch(err => console.error("Firestore addDocument failed:", err));
         }
     };
@@ -885,7 +888,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addSystemLog(`Persona created: "${persona.name}"`, 'Persona');
 
         if (user && !isOfflineMode) {
-            const docRef = doc(db, 'tenants', user.uid, 'personas', String(newPersonaId));
+            const docRef = doc(db, 'tenants', (user.tenantId || user.uid), 'personas', String(newPersonaId));
             setDoc(docRef, newPersona).catch(err => console.error("Firestore addPersona failed:", err));
         }
     };
@@ -894,7 +897,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setStrategyBrief(brief);
         if (user && !isOfflineMode) {
             try {
-                const briefRef = doc(db, 'tenants', user.uid, 'briefs', 'strategy');
+                const briefRef = doc(db, 'tenants', (user.tenantId || user.uid), 'briefs', 'strategy');
                 if (brief === null) {
                     await setDoc(briefRef, { deleted: true });
                 } else {
@@ -910,7 +913,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setCampaignBrief(brief);
         if (user && !isOfflineMode) {
             try {
-                const briefRef = doc(db, 'tenants', user.uid, 'briefs', 'campaign');
+                const briefRef = doc(db, 'tenants', (user.tenantId || user.uid), 'briefs', 'campaign');
                 if (brief === null) {
                     await setDoc(briefRef, { deleted: true });
                 } else {
