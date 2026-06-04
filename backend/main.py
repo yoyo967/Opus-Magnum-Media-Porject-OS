@@ -4,6 +4,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import uvicorn
 import os
+import secrets
 import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -46,7 +47,22 @@ except Exception as e:
     print("Warning: firebase-admin could not be initialized:", e)
 
 # Security
-SECRET_KEY = os.environ.get("JWT_SECRET", "super-secret-opus-magnum-key-for-local-dev")
+# JWT signing key. MUST be injected at runtime (Secret Manager -> JWT_SECRET).
+# There is deliberately NO hardcoded fallback: a known key in git would let anyone
+# forge tokens and call /api/tenant/shared-key to exfiltrate the Gemini key.
+SECRET_KEY = os.environ.get("JWT_SECRET")
+if not SECRET_KEY:
+    # Cloud Run / Knative set K_SERVICE. In any managed runtime we fail closed
+    # rather than start with an insecure default.
+    if os.environ.get("K_SERVICE"):
+        raise RuntimeError(
+            "JWT_SECRET is not set. Refusing to start in a managed runtime without a "
+            "signing key. Provision it via Secret Manager (see deploy_backend_gcp.ps1)."
+        )
+    # Local dev only: ephemeral per-process key (never a constant committed to git).
+    SECRET_KEY = "local-dev-" + secrets.token_urlsafe(32)
+    print("Warning: JWT_SECRET not set -> using an ephemeral local-dev key "
+          "(tokens are invalidated on restart). Set JWT_SECRET for stable local auth.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
