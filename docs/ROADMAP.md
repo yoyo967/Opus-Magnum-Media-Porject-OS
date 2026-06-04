@@ -25,6 +25,7 @@ Heute = **Werkzeugkasten aus Prompts**: jedes Tool = eine Seite + ein single-sho
 | **L5 — Autonome Frontier Firm + SaaS** | OS fährt Kern-Ops mit Mensch-Checkpoints; an Mirrou bewiesen → Mandanten-SaaS (`byok`/`metered`) | decision-gated |
 
 ## Querschnitt-Tracks (parallel, keine Stufen)
+- **Output-/Artefakt-Schicht (Funktionskatalog):** 🟡 Pilot live (2026-06-04) — wiederverwendbare `<OutputActions>` (Kopieren · Markdown · PDF · In Workspace speichern · Als Task) in Baumeister; Rollout auf alle Tools folgt. Macht Outputs nutzbar + (via Workspace/`addDocument`) zu **geteilten Team-Artefakten**; „An Tool senden" wird später der Keim für L3.
 - **EU/DSGVO-Reife:** AI-Studio-Key → **Vertex AI europe-west** beim Ernstfall (Datenresidenz); EU-AI-Act-Labeling (Auditor) in *jeden* Creative-Output.
 - **Vertrauen/Security:** `/api/leads` auf mirrou-Member einschränken; Audit-Trail (GitHub-OS).
 - **Qualität statt Menge:** die ~49 Tools überlappen → **konsolidieren** auf ein kohärentes Set, Totes entfernen.
