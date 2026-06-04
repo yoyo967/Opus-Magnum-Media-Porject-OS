@@ -105,14 +105,14 @@ export const DirigentTool: React.FC<DirigentToolProps> = ({ navigateTo, onAnalys
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for superior reasoning capabilities
+            // Upgraded to Gemini 2.5 Pro for superior reasoning capabilities
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { responseMimeType: "application/json", responseSchema: analysisSchema } });
             const result = JSON.parse(response.text);
             setAnalysisResult(result);
             if(result.summary) {
                 setOptimizationContext(result.summary);
             }
-            addSystemLog('Project Analysis completed successfully (Gemini 3.0).', 'Dirigent', 'success');
+            addSystemLog('Project Analysis completed successfully (Gemini 2.5 Pro).', 'Dirigent', 'success');
             onAnalysisComplete?.();
         } catch (e) { 
             console.error("Fehler bei der Dirigent-Analyse:", e); 
@@ -155,7 +155,7 @@ export const DirigentTool: React.FC<DirigentToolProps> = ({ navigateTo, onAnalys
                     ) : (
                          <p className="text-[#888888] mt-1 text-sm max-w-xl">Keine aktive Kampagne. Analysiert allgemeine Aufgaben.</p>
                     )}
-                    <span className="text-[10px] text-purple-500/70 mt-2 block font-mono">Powered by Gemini 3.0 Pro</span>
+                    <span className="text-[10px] text-purple-500/70 mt-2 block font-mono">Powered by Gemini 2.5 Pro</span>
                 </div>
                 <button onClick={handleAnalyzeProject} disabled={isAnalyzing} className="w-full md:w-auto flex-shrink-0 flex items-center justify-center gap-2 bg-[#FFFFFF] text-[#0A0A0A] px-5 py-2.5 rounded-full font-medium text-sm hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:scale-100">
                     {isAnalyzing ? 'Wird analysiert...' : "Projekt analysieren"}

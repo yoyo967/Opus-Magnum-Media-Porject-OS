@@ -70,7 +70,7 @@ export const EnsembleTool: React.FC = () => {
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for sophisticated organizational planning
+            // Upgraded to Gemini 2.5 Pro for sophisticated organizational planning
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -107,7 +107,7 @@ export const EnsembleTool: React.FC = () => {
                 <button onClick={handleGenerate} disabled={isLoading} className="w-full flex items-center justify-center gap-2 bg-white text-black py-2.5 rounded-full font-medium text-sm disabled:opacity-50">
                     <EnsembleIcon /> {isLoading ? 'Generiere...' : 'Teamstruktur vorschlagen'}
                 </button>
-                <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 3.0 Pro</div>
+                <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 2.5 Pro</div>
 
                 {isLoading && <SkeletonLoader />}
                 {error && <p className="text-center text-red-400">{error}</p>}

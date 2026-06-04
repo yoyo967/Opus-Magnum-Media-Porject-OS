@@ -112,7 +112,7 @@ export const ExperimentatorTool: React.FC<ExperimentatorToolProps> = ({ navigate
                 {activeExperiment.status === 'running' && (
                     <div className="text-center mt-6">
                         <p className="text-yellow-400">Experiment läuft... (Ziel: {activeExperiment.goalMetric})</p>
-                        <button onClick={handleConcludeExperiment} disabled={isLoading} className="mt-4 bg-white text-black px-6 py-2 rounded-full font-medium text-sm">{isLoading ? "Analysiere mit Gemini 3.0..." : "Experiment abschließen"}</button>
+                        <button onClick={handleConcludeExperiment} disabled={isLoading} className="mt-4 bg-white text-black px-6 py-2 rounded-full font-medium text-sm">{isLoading ? "Analysiere mit Gemini 2.5 Pro..." : "Experiment abschließen"}</button>
                     </div>
                 )}
                 {activeExperiment.status === 'completed' && activeExperiment.results && (

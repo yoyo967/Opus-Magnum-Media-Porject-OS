@@ -222,7 +222,7 @@ const BootScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
         "OPUS MAGNUM KERNEL v4.0.1 initializing...",
         "Verifying file system integrity...",
         "Mounting virtual drives...",
-        "Loading neural modules (Gemini 3.0)...",
+        "Loading neural modules (Gemini 2.5 Pro)...",
         "Starting UI Subsystem...",
         "Establishing secure uplink...",
         "User environment loaded.",

@@ -147,7 +147,7 @@ export const OrakelTool: React.FC<OrakelToolProps> = ({ navigateTo, isEmbedded }
         
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for deeper data analysis
+            // Upgraded to Gemini 2.5 Pro for deeper data analysis
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,

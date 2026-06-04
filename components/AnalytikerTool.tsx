@@ -96,7 +96,7 @@ export const AnalytikerTool: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded 
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for causal analysis
+            // Upgraded to Gemini 2.5 Pro for causal analysis
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setInsights(response.text);
         } catch (e) {
@@ -179,7 +179,7 @@ export const AnalytikerTool: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded 
                     >
                         Insights generieren
                     </button>
-                    <p className="text-[10px] text-gray-500 text-center mt-2">Powered by Gemini 3.0 Pro</p>
+                    <p className="text-[10px] text-gray-500 text-center mt-2">Powered by Gemini 2.5 Pro</p>
                 </div>
             </div>
         </div>

@@ -312,7 +312,7 @@ export const BaumeisterTool: React.FC = () => {
         const prompt = `Act as an expert web designer and copywriter. Create a structure for a modern, high-converting landing page based on the following description.
         Description: "${description}"
         
-        IMPORTANT: Write compelling, production-ready marketing copy for all fields using Gemini 3.0 Intelligence. Do not use placeholders like "Lorem Ipsum".
+        IMPORTANT: Write compelling, production-ready marketing copy for all fields using Gemini 2.5 Pro Intelligence. Do not use placeholders like "Lorem Ipsum".
         - Hero Title: Catchy and value-driven.
         - Hero Subtitle: Explanatory and persuasive.
         - Features: 3 key benefits with clear descriptions.
@@ -344,7 +344,7 @@ export const BaumeisterTool: React.FC = () => {
         // Always regenerate to match current theme
         
         setIsGeneratingCode(true);
-        const prompt = `Act as a Senior Frontend Engineer. Convert the following Landing Page JSON structure into a single, production-ready React component using Tailwind CSS. Use Gemini 3.0 coding capabilities for clean, efficient code.
+        const prompt = `Act as a Senior Frontend Engineer. Convert the following Landing Page JSON structure into a single, production-ready React component using Tailwind CSS. Use Gemini 2.5 Pro coding capabilities for clean, efficient code.
         
         Structure:
         ${JSON.stringify(pageStructure)}

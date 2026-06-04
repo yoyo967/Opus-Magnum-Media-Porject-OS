@@ -136,14 +136,14 @@ const Footer: React.FC<FooterProps> = ({ navigateTo }) => {
                     <p className="mb-2 font-bold uppercase text-gray-500 tracking-widest">Transparency Disclosure</p>
                     <p>
                         OPUS MAGNUM MEDIA is an independent orchestration platform leveraging the advanced neural infrastructure of Alphabet Inc. and Google Cloud. 
-                        Gemini 3.0 Pro is used for reasoning and strategic synthesis. We are not an official affiliate or reseller of Google Cloud services.
+                        Gemini 2.5 Pro is used for reasoning and strategic synthesis. We are not an official affiliate or reseller of Google Cloud services.
                     </p>
                 </div>
                 <div className="flex flex-col lg:items-end gap-4">
                     <div className="flex flex-wrap gap-2 justify-start lg:justify-end">
                         <StatusIndicator label="Uplink" value="ENCRYPTED" color="text-blue-500" />
                         <StatusIndicator label="Core" value="ONLINE" blink />
-                        <StatusIndicator label="Model" value="GEMINI-3.0-PRO" color="text-purple-500" />
+                        <StatusIndicator label="Model" value="GEMINI-2.5-PRO" color="text-purple-500" />
                         <StatusIndicator label="Latency" value="12ms" />
                     </div>
                     <div className="text-[10px] text-gray-700 font-mono">

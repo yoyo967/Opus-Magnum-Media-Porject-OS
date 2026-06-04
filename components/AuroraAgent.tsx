@@ -56,7 +56,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
             
             Antworte nur mit der textlichen Zusammenfassung.`;
             
-            // Upgraded to Gemini 3.0 for deep analysis
+            // Upgraded to Gemini 2.5 Pro for deep analysis
             const analysisResponse = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: analysisPrompt });
             const analysisSummary = analysisResponse.text;
             updateLog('analysis', { status: 'complete', details: `Analyse abgeschlossen (G3.0). Fokus: ${analysisSummary.substring(0, 100)}...` });
@@ -85,7 +85,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
 
             Respond ONLY with a JSON object that adheres to the schema.`;
             
-            // Updated to Gemini 3.0 for smarter task breakdown
+            // Updated to Gemini 2.5 Pro for smarter task breakdown
             const planningResponse = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: planningPrompt, config: { responseMimeType: "application/json", responseSchema: tasksSchema } });
             const { tasks: newTasks } = JSON.parse(planningResponse.text);
             updateLog('planning', { status: 'complete', details: `${newTasks.length} Aufgaben generiert.` });
@@ -122,7 +122,7 @@ export const AuroraAgent: React.FC<{ navigateTo: (page: string) => void; }> = ({
                         <AuroraIcon />
                         {status === 'thinking' ? 'AURORA arbeitet...' : 'An AURORA delegieren'}
                     </button>
-                    <div className="text-[10px] text-purple-400 text-center mt-2">Powered by Gemini 3.0 Pro Architecture</div>
+                    <div className="text-[10px] text-purple-400 text-center mt-2">Powered by Gemini 2.5 Pro Architecture</div>
                 </div>
 
                 {/* Right: Logs */}

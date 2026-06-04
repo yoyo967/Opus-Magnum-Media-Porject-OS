@@ -64,7 +64,7 @@ const ScheduleModal: React.FC<{
 
         try {
             const ai = getGeminiClient();
-            // Updated to Gemini 3.0 for better channel adaptation
+            // Updated to Gemini 2.5 Pro for better channel adaptation
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -163,7 +163,7 @@ const QuickDraftModal: React.FC<{
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for better social copy
+            // Upgraded to Gemini 2.5 Pro for better social copy
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt

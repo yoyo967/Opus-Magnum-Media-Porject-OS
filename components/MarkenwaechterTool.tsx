@@ -88,14 +88,14 @@ export const MarkenwaechterTool: React.FC = () => {
             let response;
             if (activeTab === 'textCheck' && checkText) {
                 prompt += `\nText: "${checkText}"`;
-                // Upgraded to Gemini 3.0 for stricter compliance checking
+                // Upgraded to Gemini 2.5 Pro for stricter compliance checking
                 response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt, config: { systemInstruction: buildMirrouContext('markenwaechter') } });
             } else if (activeTab === 'imageCheck' && checkImage) {
                 prompt += "\nImage is attached.";
                 const base64Data = await blobToBase64(checkImage.file);
                 const imagePart = { inlineData: { mimeType: checkImage.file.type, data: base64Data } };
                 const textPart = { text: prompt };
-                // Upgraded to Gemini 3.0 for multimodal checking
+                // Upgraded to Gemini 2.5 Pro for multimodal checking
                 response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: { parts: [imagePart, textPart] }, config: { systemInstruction: buildMirrouContext('markenwaechter') } });
             } else {
                 setCheckResult("Kein Inhalt zum Überprüfen vorhanden.");
@@ -135,7 +135,7 @@ export const MarkenwaechterTool: React.FC = () => {
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for higher quality rewriting
+            // Upgraded to Gemini 2.5 Pro for higher quality rewriting
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setRewrittenText(response.text);
         } catch (error) {
@@ -209,7 +209,7 @@ export const MarkenwaechterTool: React.FC = () => {
                             </button>
                         </div>
                          <div className="bg-[#0A0A0A] rounded-lg border border-[#333333] p-4">
-                            <h3 className="text-lg font-medium text-white mb-2">Analyseergebnis (Gemini 3.0)</h3>
+                            <h3 className="text-lg font-medium text-white mb-2">Analyseergebnis (Gemini 2.5 Pro)</h3>
                             <div className="prose prose-sm prose-invert max-w-none text-gray-300">
                                 {isChecking && <p className="animate-pulse">Analysiere Asset...</p>}
                                 {checkResult && <div dangerouslySetInnerHTML={{ __html: checkResult.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\* (.*)/g, '<li>$1</li>') }} />}

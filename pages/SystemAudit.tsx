@@ -64,7 +64,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
         const runAudit = async () => {
             // Simulated boot sequence
             const bootSequence = [
-                "Initializing System Diagnostic Protocol (Gemini 3.0)...",
+                "Initializing System Diagnostic Protocol (Gemini 2.5 Pro)...",
                 "Connecting to Neural Backbone...",
                 "Analyzing Task Graph...",
                 `Identified ${tasks.length} active process nodes...`,
@@ -178,7 +178,7 @@ const SystemAudit: React.FC<{ navigateTo: (page: string) => void }> = ({ navigat
             <header className="mb-12 text-center">
                 <h1 className="text-5xl font-bold text-[#F5F5F5]">System Audit</h1>
                 <p className="mt-2 text-purple-300 font-mono">:: Deep Diagnostic Protocol ::</p>
-                <p className="text-xs text-gray-500 mt-2">Powered by Gemini 3.0 Architecture</p>
+                <p className="text-xs text-gray-500 mt-2">Powered by Gemini 2.5 Pro Architecture</p>
             </header>
 
             <main className="max-w-5xl mx-auto">

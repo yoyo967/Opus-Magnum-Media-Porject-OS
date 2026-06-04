@@ -181,7 +181,7 @@ const Nexus: React.FC<NexusProps> = ({ navigateTo, isEmbedded }) => {
                                 <button 
                                     onClick={() => setDeepMode(!deepMode)} 
                                     className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-all ${deepMode ? 'bg-purple-900/30 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-[#1C1C1C] border-[#333] text-gray-500 hover:border-gray-400'}`}
-                                    title="Aktiviert Gemini 3.0 Reasoning für tiefere Zusammenhänge"
+                                    title="Aktiviert Gemini 2.5 Pro Reasoning für tiefere Zusammenhänge"
                                 >
                                     <BrainIcon />
                                     Deep Synthesis

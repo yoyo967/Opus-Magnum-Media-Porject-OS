@@ -47,7 +47,7 @@ export const BerichterstatterTool: React.FC<BerichterstatterToolProps> = ({ navi
         Data: ${JSON.stringify(relevantTasks.map(t => ({ id: t.id, title: t.title, status: t.status, performanceData: t.performanceData })))}
         Strategy: ${JSON.stringify(campaignBrief)}
         Structure: Executive Summary, Strategic Analysis, Operational Velocity, Risks & Opportunities, Next Steps.
-        Use Gemini 3.0 reasoning.`;
+        Use Gemini 2.5 Pro reasoning.`;
         
         try {
             const ai = getGeminiClient();
@@ -91,7 +91,7 @@ export const BerichterstatterTool: React.FC<BerichterstatterToolProps> = ({ navi
                     {isLoading && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0A0A]/90 z-10">
                             <div className="w-12 h-12 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <p className="text-gray-400 animate-pulse font-medium">Gemini 3.0 analysiert Projektdaten...</p>
+                            <p className="text-gray-400 animate-pulse font-medium">Gemini 2.5 Pro analysiert Projektdaten...</p>
                         </div>
                     )}
                     {error && <p className="text-red-400 text-center pt-20">{error}</p>}

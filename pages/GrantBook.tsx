@@ -82,7 +82,7 @@ const GrantBook: React.FC<GrantBookProps> = ({ navigateTo, onComplete }) => {
                     <p className="font-mono text-purple-400 text-sm uppercase tracking-[0.3em] mb-4">The Masterplan</p>
                     <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tighter mb-6">THE GRANT BOOK.</h1>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
-                        Autoren: Gemini 3.0 Pro & Yahya Yildirim<br/>
+                        Autoren: Gemini 2.5 Pro & Yahya Yildirim<br/>
                         <span className="text-sm text-gray-500 mt-2 block">Status: Co-Creation in Progress (Kapitel 1-4 definiert)</span>
                     </p>
                 </div>

@@ -938,7 +938,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt, config: { responseMimeType: "application/json", responseSchema: assetSchema } });
             const assetMetadata = JSON.parse(response.text);
             updateTask(taskId, { assetMetadata });
-            addSystemLog(`Asset indexed successfully via Gemini 3.0.`, 'Library', 'success');
+            addSystemLog(`Asset indexed successfully via Gemini 2.5 Pro.`, 'Library', 'success');
         } catch (error) { console.error("Error indexing asset:", error); addSystemLog(`Asset indexing failed.`, 'Library', 'error'); }
     };
 

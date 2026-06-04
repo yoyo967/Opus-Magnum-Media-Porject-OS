@@ -351,7 +351,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
                         <button 
                             onClick={() => setThinkingMode(!thinkingMode)} 
                             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${thinkingMode ? 'bg-purple-900/30 border-purple-500 text-purple-300 shadow-[0_0_10px_#a855f7]' : 'bg-[#1C1C1C] border-[#333] text-gray-400 hover:border-gray-400'}`}
-                            title="Activates Gemini 3.0 Reasoning for complex tasks (+2 Credits)"
+                            title="Activates Gemini 2.5 Pro Reasoning for complex tasks (+2 Credits)"
                         >
                             <BrainIcon active={thinkingMode} />
                             Deep Think

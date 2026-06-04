@@ -104,7 +104,7 @@ export const Kollaborator: React.FC<KollaboratorProps> = ({ task, onUpdateTask }
             }
 
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro
                 contents: [...history, { role: 'user', parts: userParts }],
                 config: { systemInstruction, tools },
             });

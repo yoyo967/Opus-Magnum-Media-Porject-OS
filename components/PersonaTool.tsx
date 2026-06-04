@@ -38,7 +38,7 @@ export const PersonaTool: React.FC<{ navigateTo: (page: string) => void }> = ({ 
 
             // Generate Persona Details
             const detailsPrompt = `Erstelle eine detaillierte Buyer Persona basierend auf dieser Beschreibung: "${description}". Fülle alle Felder des JSON-Schemas aus.`;
-            // Upgraded to Gemini 3.0 for deeper empathy and detail
+            // Upgraded to Gemini 2.5 Pro for deeper empathy and detail
             const detailsResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: detailsPrompt,

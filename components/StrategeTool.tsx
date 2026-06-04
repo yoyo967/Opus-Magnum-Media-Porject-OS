@@ -249,7 +249,7 @@ Bitte generiere einen vollständigen Kampagnenplan, der strikt dem JSON-Schema f
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for better strategic planning
+            // Upgraded to Gemini 2.5 Pro for better strategic planning
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', 
                 contents: prompt,
@@ -351,7 +351,7 @@ ${(campaign.kpis || []).map(k => `- ${k}`).join('\n')}
         
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for advanced simulation
+            // Upgraded to Gemini 2.5 Pro for advanced simulation
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -424,7 +424,7 @@ ${(campaign.kpis || []).map(k => `- ${k}`).join('\n')}
                             </>
                         )}
                     </button>
-                    <p className="text-center text-[10px] text-gray-500">Powered by Gemini 3.0 Pro</p>
+                    <p className="text-center text-[10px] text-gray-500">Powered by Gemini 2.5 Pro</p>
                 </div>
 
                 <div className={`lg:col-span-2 bg-[#1C1C1C] rounded-lg p-6 border border-[#333333] min-h-[600px] ${isEmbedded ? 'overflow-y-auto' : ''}`}>

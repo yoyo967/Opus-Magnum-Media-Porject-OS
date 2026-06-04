@@ -77,7 +77,7 @@ export const ConductorTool: React.FC<ConductorToolProps> = ({ navigateTo, isEmbe
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for better intent routing
+            // Upgraded to Gemini 2.5 Pro for better intent routing
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -86,7 +86,7 @@ export const ConductorTool: React.FC<ConductorToolProps> = ({ navigateTo, isEmbe
             const rec = JSON.parse(response.text);
             setRecommendation(rec);
             setState('recommendation');
-            addSystemLog(`Routing Request: Identified agent '${rec.agent}' for objective via Gemini 3.0.`, 'Conductor');
+            addSystemLog(`Routing Request: Identified agent '${rec.agent}' for objective via Gemini 2.5 Pro.`, 'Conductor');
         } catch (e) {
             console.error("Conductor AI Error:", e);
             setError("Konnte die Anfrage nicht verarbeiten. Bitte versuchen Sie es erneut.");
@@ -160,7 +160,7 @@ export const ConductorTool: React.FC<ConductorToolProps> = ({ navigateTo, isEmbe
                     className="w-full flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium text-sm hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-lg shadow-white/5"
                 >
                     <ConductorIcon />
-                    {state === 'routing' ? 'Analysiere Ziel (Gemini 3.0)...' : 'An Conductor delegieren'}
+                    {state === 'routing' ? 'Analysiere Ziel (Gemini 2.5 Pro)...' : 'An Conductor delegieren'}
                 </button>
                 {error && <p className="text-red-400 text-sm text-center">{error}</p>}
             </div>

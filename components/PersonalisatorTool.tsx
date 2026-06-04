@@ -66,7 +66,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
         try {
             const ai = getGeminiClient();
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro
                 contents: prompt,
             });
             setPersonalizedContent(response.text);
@@ -188,7 +188,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
                                     <div className="space-y-2">
                                         <h4 className="font-semibold text-gray-300 text-sm">Personalisiert für: <span className="text-blue-400">{selectedPersona?.name}</span></h4>
                                         <div className="prose prose-sm prose-invert text-gray-300 bg-[#1C1C1C] p-4 rounded-md h-full min-h-[200px] border border-[#333333]">
-                                            {isLoading && <p className="animate-pulse">Gemini 3.0 passt Inhalte an...</p>}
+                                            {isLoading && <p className="animate-pulse">Gemini 2.5 Pro passt Inhalte an...</p>}
                                             {error && <p className="text-red-400">{error}</p>}
                                             {personalizedContent && <div dangerouslySetInnerHTML={{ __html: personalizedContent.replace(/\n/g, '<br/>') }} className="[&>mark]:bg-blue-500/30 [&>mark]:text-blue-200 [&>mark]:px-1 [&>mark]:rounded-sm"></div>}
                                         </div>

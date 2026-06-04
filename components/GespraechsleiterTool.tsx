@@ -116,7 +116,7 @@ export const GespraechsleiterTool: React.FC = () => {
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for better roleplay and psychological nuance
+            // Upgraded to Gemini 2.5 Pro for better roleplay and psychological nuance
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,

@@ -43,7 +43,7 @@ const ReviewModal: React.FC<{ task: Task, onClose: () => void, onUpdateTask: (id
         try {
             const ai = getGeminiClient();
             const imagePart = selectedVersion.type === 'image' ? { inlineData: { mimeType: 'image/jpeg', data: selectedVersion.url.split(',')[1] } } : null;
-            // Updated to Gemini 3.0 for better review
+            // Updated to Gemini 2.5 Pro for better review
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: imagePart ? { parts: [imagePart, { text: prompt }] } : prompt });
             
             const newFeedback: Feedback = { user: 'AURORA', comment: response.text, timestamp: new Date().toISOString() };

@@ -30,7 +30,7 @@ export const DiplomatTool: React.FC<DiplomatToolProps> = ({ isEmbedded }) => {
         const prompt = `Act as a strategic communications expert named "Diplomat". Draft a professional response.
         Goal: ${context}
         Original: "${originalMessage}"
-        Craft a response that is polite, professional, and strategic. Use Gemini 3.0 reasoning.`;
+        Craft a response that is polite, professional, and strategic. Use Gemini 2.5 Pro reasoning.`;
 
         try {
             const ai = getGeminiClient();
@@ -72,7 +72,7 @@ export const DiplomatTool: React.FC<DiplomatToolProps> = ({ isEmbedded }) => {
                 <div className={`bg-[#1C1C1C] rounded-lg border border-[#333333] p-6 flex flex-col ${isEmbedded ? 'flex-1 overflow-hidden' : ''}`}>
                     <div className="flex justify-between items-center mb-4 flex-shrink-0">
                         <h3 className="text-lg font-semibold text-white">Entwurf</h3>
-                        <span className="text-[10px] text-purple-400 bg-purple-900/20 px-2 py-0.5 rounded border border-purple-500/20">Gemini 3.0</span>
+                        <span className="text-[10px] text-purple-400 bg-purple-900/20 px-2 py-0.5 rounded border border-purple-500/20">Gemini 2.5 Pro</span>
                     </div>
                     <div className={`bg-[#0A0A0A] rounded-lg border border-[#333333] p-4 flex-grow prose prose-sm prose-invert max-w-none text-gray-300 whitespace-pre-wrap relative ${isEmbedded ? 'overflow-y-auto' : 'min-h-[300px]'}`}>
                         {isLoading && ( <div className="absolute inset-0 flex items-center justify-center bg-[#0A0A0A]/80 z-10"><div className="text-center text-gray-500 animate-pulse"><p>Diplomat analysiert...</p></div></div> )}

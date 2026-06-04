@@ -83,7 +83,7 @@ export const SequenzerTool: React.FC<SequenzerToolProps> = ({ navigateTo, isEmbe
         try {
             const ai = getGeminiClient();
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro
                 contents: prompt,
                 config: { 
                     responseMimeType: "application/json", 
@@ -174,7 +174,7 @@ export const SequenzerTool: React.FC<SequenzerToolProps> = ({ navigateTo, isEmbe
                                 <button onClick={handleGenerateSequence} disabled={isLoading} className="w-full bg-white text-black py-3 rounded-full font-medium disabled:opacity-50 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm">
                                     {isLoading ? <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> Generiere...</> : <><SequenzerIcon /> Mit KI generieren</>}
                                 </button>
-                                <p className="text-[10px] text-gray-500 text-center mt-2">Powered by Gemini 3.0 Pro Thinking Engine</p>
+                                <p className="text-[10px] text-gray-500 text-center mt-2">Powered by Gemini 2.5 Pro Thinking Engine</p>
                             </div>
                         </div>
                     ) : selectedSequence ? (

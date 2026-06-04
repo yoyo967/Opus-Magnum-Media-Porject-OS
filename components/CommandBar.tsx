@@ -65,7 +65,7 @@ export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; naviga
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for superior command understanding
+            // Upgraded to Gemini 2.5 Pro for superior command understanding
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: [...history, { role: 'user', parts: [{ text: currentInput }] }],

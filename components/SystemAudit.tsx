@@ -67,7 +67,7 @@ const SystemAudit: React.FC<SystemAuditProps> = ({ navigateTo, isEmbedded }) => 
         let isMounted = true;
         const runAudit = async () => {
             const bootSequence = [
-                "Initializing System Diagnostic Protocol (Gemini 3.0)...",
+                "Initializing System Diagnostic Protocol (Gemini 2.5 Pro)...",
                 "Connecting to Neural Backbone...",
                 "Analyzing Task Graph...",
                 `Identified ${tasks.length} active process nodes...`,
@@ -174,7 +174,7 @@ const SystemAudit: React.FC<SystemAuditProps> = ({ navigateTo, isEmbedded }) => 
                 <header className="mb-12 text-center">
                     <h1 className="text-5xl font-bold text-[#F5F5F5]">System Audit</h1>
                     <p className="mt-2 text-purple-300 font-mono">:: Deep Diagnostic Protocol ::</p>
-                    <p className="text-xs text-gray-500 mt-2">Powered by Gemini 3.0 Architecture</p>
+                    <p className="text-xs text-gray-500 mt-2">Powered by Gemini 2.5 Pro Architecture</p>
                 </header>
             )}
 

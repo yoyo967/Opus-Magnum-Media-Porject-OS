@@ -111,7 +111,7 @@ const Pricing: React.FC = () => {
                     "5,000 Credits / Month",
                     "Access: Conductor (Auto-Mode)",
                     "Access: Masterpiece Unlimited",
-                    "Model: Gemini 3.0 Pro",
+                    "Model: Gemini 2.5 Pro",
                     "Priority Processing"
                 ]}
                 cta="Allocate Cluster"

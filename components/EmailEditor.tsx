@@ -88,7 +88,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
 
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for better persuasion
+            // Upgraded to Gemini 2.5 Pro for better persuasion
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -133,7 +133,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for deeper analysis
+            // Upgraded to Gemini 2.5 Pro for deeper analysis
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -198,7 +198,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
         
         try {
             const ai = getGeminiClient();
-            // Upgraded to Gemini 3.0 for intelligent editing
+            // Upgraded to Gemini 2.5 Pro for intelligent editing
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: fullPrompt });
             
             originalSelection.range.deleteContents();
@@ -237,7 +237,7 @@ export const EmailEditor: React.FC<{ navigateTo: (page: string) => void }> = ({ 
                     <button onClick={handleGenerateEmail} disabled={isLoading} className="w-full bg-white text-black py-2.5 rounded-full font-medium text-sm disabled:opacity-50">
                         {isLoading ? 'Generiere...' : 'E-Mail erstellen'}
                     </button>
-                    <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 3.0 Pro</div>
+                    <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 2.5 Pro</div>
                     {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                     
                     {/* Prediction Widget */}

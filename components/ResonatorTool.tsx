@@ -84,7 +84,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
         
         Framework for the Hook (Opening): ${hookInstruction}
 
-        For LinkedIn: Professional but engaging tone, B2B focus, format for readability (line breaks). Use Gemini 3.0 reasoning to ensure high virality potential.
+        For LinkedIn: Professional but engaging tone, B2B focus, format for readability (line breaks). Use Gemini 2.5 Pro reasoning to ensure high virality potential.
         For Instagram: Visual-first, use emojis, casual tone. Generate a creative, detailed prompt for an accompanying image (do not create the image itself, just the prompt description). 
         
         Respond ONLY with a JSON object that adheres to the provided schema.`;
@@ -92,7 +92,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
         try {
             const ai = getGeminiClient();
             // Step 1: Generate text content and image prompt
-            // Upgraded to Gemini 3.0 for superior creative writing and hook generation
+            // Upgraded to Gemini 2.5 Pro for superior creative writing and hook generation
             const textResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
@@ -224,7 +224,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
                 <button onClick={handleGeneratePosts} disabled={isLoading} className="w-full bg-white text-black py-2.5 rounded-full font-medium text-sm disabled:opacity-50 transition-transform hover:scale-105">
                     {isLoading ? 'Resonanz wird berechnet...' : 'Social Posts erstellen'}
                 </button>
-                <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 3.0 Pro</div>
+                <div className="text-[10px] text-gray-500 text-center">Powered by Gemini 2.5 Pro</div>
                 
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             </div>

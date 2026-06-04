@@ -88,7 +88,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
 
             try {
                 const ai = getGeminiClient();
-                // Updated to Gemini 3.0 for better questions
+                // Updated to Gemini 2.5 Pro for better questions
                 const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
                 const questions = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));
                 setSuggestedQuestions(questions);
@@ -119,7 +119,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
         
         try {
             const ai = getGeminiClient();
-            // Updated to Gemini 3.0 for better documentation
+            // Updated to Gemini 2.5 Pro for better documentation
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             setGeneratedContent(response.text);
         } catch (error) {
@@ -157,7 +157,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
 
         try {
              const ai = getGeminiClient();
-             // Upgraded to Gemini 3.0 for better context handling in education
+             // Upgraded to Gemini 2.5 Pro for better context handling in education
              const response = await ai.models.generateContentStream({ model: 'gemini-2.5-pro', contents: prompt });
              
              let fullResponse = "";
@@ -207,7 +207,7 @@ const Akademie: React.FC<AkademieProps> = ({ isEmbedded }) => {
 
         try {
             const ai = getGeminiClient();
-            // Updated to Gemini 3.0 for smarter quizzes
+            // Updated to Gemini 2.5 Pro for smarter quizzes
             const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
             const quiz = JSON.parse(response.text.replace(/```json\n?|\n?```/g, ''));
             setQuizData(quiz);

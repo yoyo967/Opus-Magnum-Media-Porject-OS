@@ -30,7 +30,7 @@ const InterimManager: React.FC<{ navigateTo: (page: string) => void }> = ({ navi
         setInput('');
         setIsTyping(true);
 
-        const prompt = `Act as a highly experienced Interim Manager / CMO. You are advising the user on their current project using your superior strategic reasoning (Gemini 3.0).
+        const prompt = `Act as a highly experienced Interim Manager / CMO. You are advising the user on their current project using your superior strategic reasoning (Gemini 2.5 Pro).
         
         Context:
         - Active Campaign: ${campaignBrief?.campaignTitle || 'None'}

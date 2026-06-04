@@ -47,7 +47,7 @@ const StatusBericht: React.FC<{ navigateTo: (page: string) => void }> = ({ navig
             ${JSON.stringify(systemSnapshot, null, 2)}
 
             **Diagnosis Requirements:**
-            Analyze the data deeply using Gemini 3.0 reasoning. Don't just summarize; diagnose the *health* and *velocity* of the system.
+            Analyze the data deeply using Gemini 2.5 Pro reasoning. Don't just summarize; diagnose the *health* and *velocity* of the system.
             
             Structure the report in 4 distinct "Atomic Layers" (use Markdown h2/h3):
             1.  **⚛️ Nucleus Health (Core Stability):** Assess the fundamental operational state based on logs and budget integrity.

@@ -99,7 +99,7 @@ const Features: React.FC = () => {
             <BentoCard 
                 className="md:col-span-2 lg:col-span-2"
                 title="Reasoning Core"
-                description="Der 'Think Mode' für komplexe Strategien. Gemini 3.0 Pro analysiert Zusammenhänge in Ihrem Unternehmen."
+                description="Der 'Think Mode' für komplexe Strategien. Gemini 2.5 Pro analysiert Zusammenhänge in Ihrem Unternehmen."
                 icon={<BrainIcon />}
                 bgImage="from-purple-900/40 to-blue-900/10"
                 delay={0}

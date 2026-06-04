@@ -89,7 +89,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
         try {
             const ai = getGeminiClient();
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
+                model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro
                 contents: prompt,
                 config: {
                     systemInstruction: buildMirrouContext('prometheus'),
@@ -124,7 +124,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded bg-purple-900/20">GEMINI 3.0 ENABLED</span>
+                        <span className="text-xs font-mono text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded bg-purple-900/20">GEMINI 2.5 Pro ENABLED</span>
                         <span className="text-xs font-mono text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded bg-blue-900/20">THINKING MODE ON</span>
                     </div>
                     <button 
@@ -168,7 +168,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
                     <div className="flex flex-col items-center justify-center h-32 text-gray-500 space-y-4">
                         <div className="w-12 h-12 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                         <p className="animate-pulse font-mono text-xs">ANALYZING VECTOR SPACE...</p>
-                        <p className="text-[10px] text-purple-400/60 animate-pulse">Gemini 3.0 Thinking Process Active</p>
+                        <p className="text-[10px] text-purple-400/60 animate-pulse">Gemini 2.5 Pro Thinking Process Active</p>
                     </div>
                 )}
                 
