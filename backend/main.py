@@ -173,6 +173,20 @@ def _ensure_tenant_and_membership(tenant_id: str, uid: str, email: str):
             "permissions": ["all"],
         })
 
+def require_mirrou_member(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Wie get_current_user_email, verlangt aber zusaetzlich tenant_id == 'mirrou'
+    (aus dem signierten JWT) → schuetzt die Lead-Endpunkte auf das Mirrou-Team."""
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid authorization token")
+    email = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid token credentials")
+    if payload.get("tenant_id") != MIRROU_TENANT_ID:
+        raise HTTPException(status_code=403, detail="Forbidden: Mirrou team access only")
+    return email
+
 class AuthRequest(BaseModel):
     email: str
     password: str
@@ -206,7 +220,7 @@ def get_shared_key(email: str = Depends(get_current_user_email)):
 
 @app.get("/api/leads")
 @limiter.limit("30/minute")
-def list_leads(request: Request, email: str = Depends(get_current_user_email)):
+def list_leads(request: Request, email: str = Depends(require_mirrou_member)):
     """Lead-Inbox: liefert die Website-Leads aus tenants/mirrou/leads (Admin SDK,
     umgeht die firestore.rules). JWT-geschuetzt.
     NOTE: aktuell darf jeder authentifizierte Cockpit-User Mirrous Leads lesen
@@ -243,7 +257,7 @@ def list_leads(request: Request, email: str = Depends(get_current_user_email)):
 
 @app.patch("/api/leads/{lead_id}")
 @limiter.limit("60/minute")
-def update_lead_status(request: Request, lead_id: str, body: LeadStatusUpdate, email: str = Depends(get_current_user_email)):
+def update_lead_status(request: Request, lead_id: str, body: LeadStatusUpdate, email: str = Depends(require_mirrou_member)):
     """Lead-Inbox v2: setzt den Pipeline-Status eines Leads. JWT-geschuetzt, Admin SDK."""
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
