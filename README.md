@@ -177,6 +177,7 @@ Basis-URL (live): `https://opus-magnum-ai-backend-923137317598.europe-west3.run.
 | `POST` | `/api/auth/login` | — | `{email,password}` → `{token, tenant_id, email, firebaseToken}` |
 | `GET` | `/api/tenant/shared-key` | **Bearer JWT** | → `{geminiApiKey}` (aus Secret Manager; nur In-Memory beim Client) |
 | `POST` | `/api/lead` | — | `{name,email,brand,website?,ad_spend?,message,consent,company_website?}` → `{status,message}` |
+| `GET` | `/api/leads` | **Bearer JWT** | → `{leads:[…], count}` — Lead-Inbox; liest `tenants/mirrou/leads` via Admin SDK (umgeht Rules). *Aktuell jeder Auth-User; bei SaaS auf mirrou-Mitglieder/Admin einschränken.* |
 
 **`/api/lead`-Logik:** Honeypot (`company_website` → Spam-Sink, 200), Pflichtfelder + `consent` erzwungen, Schreiben nach `tenants/mirrou/leads` via Admin SDK (`SERVER_TIMESTAMP`, `status:"new"`).
 **CORS:** First-Party-Allowlist (`mirrou.studio`, `www`/`app.`, `.web.app`, Cockpit, `localhost`), überschreibbar via `ALLOWED_ORIGINS`-Env. **Rate-Limiting** (slowapi, keyed auf `X-Forwarded-For`): `/api/lead` 10/min · Login 10/min · Register 5/min.
@@ -284,6 +285,9 @@ Das Skript mountet `GEMINI_API_KEY` und `JWT_SECRET` aus Secret Manager. **Reihe
 | **3** | Secure Deployment + GCP Secret Manager (`shared-key`-Endpoint) | ✅ |
 | **—** | Firebase Custom-Token-Brücke (FE + BE) | ✅ |
 | **—** | Mirrou-Website-Lead-Pipeline (`/api/lead` → Firestore EU) **E2E verifiziert** | ✅ 2026-06-04 |
+| **—** | Backend-Härtung: CORS-Allowlist + Rate-Limiting | ✅ 2026-06-04 (rev `00012`) |
+| **—** | **Lead-Inbox** Cockpit-View + `GET /api/leads` | ✅ 2026-06-04 (BE `00014` / FE `00011`) |
+| **—** | Auth-Fix: `bcrypt <4.1` — `register` **und** echtes `login` warfen 500 | ✅ 2026-06-04 |
 
 **Offen / Roadmap:**
 - ✅ Backend gehärtet: CORS-Allowlist + Rate-Limiting (Rev `00012-8g9`, 2026-06-04).
