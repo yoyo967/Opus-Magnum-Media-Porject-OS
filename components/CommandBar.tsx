@@ -17,7 +17,7 @@ type Message = {
     text: string;
 };
 
-const PAGES = [ 'home', 'campaign', 'meisterwerk', 'visionar', 'stratege', 'konversator', 'auditor', 'animator', 'dirigent', 'secret', 'masterplan', 'einreichung', 'personalisator', 'orakel', 'mediathek', 'akademie', 'observatorium', 'conductor', 'publisher', 'persona', 'auditorium', 'analytiker', 'markenwaechter', 'berichterstatter', 'nexus', 'kalkulator', 'experimentator', 'prometheus', 'emailmarketing', 'interimmanager', 'gespraechsleiter', 'resonator', 'kolorit', 'ensemble', 'diplomat', 'chronist', 'sequenzer', 'taktgeber', 'spaeher', 'baumeister' ];
+const PAGES = [ 'home', 'campaign', 'meisterwerk', 'visionar', 'stratege', 'konversator', 'auditor', 'animator', 'dirigent', 'secret', 'masterplan', 'einreichung', 'personalisator', 'orakel', 'mediathek', 'akademie', 'observatorium', 'conductor', 'publisher', 'persona', 'auditorium', 'analytiker', 'markenwaechter', 'berichterstatter', 'nexus', 'kalkulator', 'experimentator', 'prometheus', 'emailmarketing', 'interimmanager', 'gespraechsleiter', 'resonator', 'kolorit', 'ensemble', 'diplomat', 'chronist', 'sequenzer', 'taktgeber', 'spaeher', 'baumeister', 'leadinbox' ];
 
 export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; navigateTo: (page: string) => void; }> = ({ isOpen, onClose, navigateTo }) => {
     const { addTask, setToolInput } = useTasks();

@@ -164,6 +164,7 @@ const Header: React.FC<HeaderProps> = ({ navigateTo, currentPage, onOpenCommandB
             <NavDropdown title="Communication">
                 <DropdownItem page="diplomat" currentPage={currentPage} navigateTo={navigateTo} title="Diplomat" description="Formulates strategic responses to emails." />
                 <DropdownItem page="chronist" currentPage={currentPage} navigateTo={navigateTo} title="Chronicler" description="Manages contacts and interactions (CRM)." />
+                <DropdownItem page="leadinbox" currentPage={currentPage} navigateTo={navigateTo} title="Lead Inbox" description="Incoming leads from the Mirrou website contact form." />
                 <DropdownItem page="gespraechsleiter" currentPage={currentPage} navigateTo={navigateTo} title="Negotiator" description="Demonstrates AI collaboration in meetings." />
                 <DropdownItem page="auditorium" currentPage={currentPage} navigateTo={navigateTo} title="Auditorium" description="Central review center for creative approvals." />
             </NavDropdown>

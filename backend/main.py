@@ -162,6 +162,43 @@ def get_shared_key(email: str = Depends(get_current_user_email)):
         raise HTTPException(status_code=404, detail="Shared Gemini API Key not configured on this environment")
     return {"geminiApiKey": shared_key}
 
+@app.get("/api/leads")
+@limiter.limit("30/minute")
+def list_leads(request: Request, email: str = Depends(get_current_user_email)):
+    """Lead-Inbox: liefert die Website-Leads aus tenants/mirrou/leads (Admin SDK,
+    umgeht die firestore.rules). JWT-geschuetzt.
+    NOTE: aktuell darf jeder authentifizierte Cockpit-User Mirrous Leads lesen
+    (Mirrou = Tenant #1, intern). Beim Multi-Tenant-SaaS-Start auf
+    mirrou-Tenant-Mitglieder / Admin-Rolle einschraenken."""
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    try:
+        leads_ref = (
+            db.collection('tenants').document('mirrou').collection('leads')
+            .order_by('created_at', direction=firestore.Query.DESCENDING)
+            .limit(200)
+        )
+        out = []
+        for doc in leads_ref.stream():
+            d = doc.to_dict()
+            created = d.get('created_at')
+            out.append({
+                "id": doc.id,
+                "name": d.get('name', ''),
+                "email": d.get('email', ''),
+                "brand": d.get('brand', ''),
+                "website": d.get('website', ''),
+                "ad_spend": d.get('ad_spend'),
+                "message": d.get('message', ''),
+                "consent": d.get('consent', False),
+                "status": d.get('status', 'new'),
+                "created_at": created.isoformat() if hasattr(created, 'isoformat') else None,
+            })
+        return {"leads": out, "count": len(out)}
+    except Exception as e:
+        print("Error reading leads:", e)
+        raise HTTPException(status_code=500, detail="Failed to read leads")
+
 @app.post("/api/lead")
 @limiter.limit("10/minute")
 def create_lead(request: Request, lead: LeadRequest):
