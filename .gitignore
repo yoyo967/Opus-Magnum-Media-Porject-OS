@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Python (backend)
+__pycache__/
+*.pyc
+
+# Env (.env.production is intentionally tracked = public API URL only)
+.env
+.env.local
+.env.*.local
+
 # Claude Code local settings
 .claude/
 
