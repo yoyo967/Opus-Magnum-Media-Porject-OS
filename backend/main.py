@@ -57,7 +57,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -151,6 +151,12 @@ class LeadRequest(BaseModel):
     consent: bool
     company_website: str | None = None # Honeypot
 
+class LeadStatusUpdate(BaseModel):
+    status: str
+
+# Lead-Pipeline-Stufen (Lead-Inbox v2)
+ALLOWED_LEAD_STATUSES = {"new", "contacted", "qualified", "won", "lost", "archived"}
+
 @app.get("/health")
 def health_check():
     return {"status": "operational", "system": "OPUS MAGNUM AI"}
@@ -198,6 +204,30 @@ def list_leads(request: Request, email: str = Depends(get_current_user_email)):
     except Exception as e:
         print("Error reading leads:", e)
         raise HTTPException(status_code=500, detail="Failed to read leads")
+
+@app.patch("/api/leads/{lead_id}")
+@limiter.limit("60/minute")
+def update_lead_status(request: Request, lead_id: str, body: LeadStatusUpdate, email: str = Depends(get_current_user_email)):
+    """Lead-Inbox v2: setzt den Pipeline-Status eines Leads. JWT-geschuetzt, Admin SDK."""
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    if body.status not in ALLOWED_LEAD_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {sorted(ALLOWED_LEAD_STATUSES)}")
+    try:
+        ref = db.collection('tenants').document('mirrou').collection('leads').document(lead_id)
+        if not ref.get().exists:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        ref.update({
+            "status": body.status,
+            "updated_at": firestore.SERVER_TIMESTAMP,
+            "updated_by": email,
+        })
+        return {"status": "success", "id": lead_id, "new_status": body.status}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("Error updating lead status:", e)
+        raise HTTPException(status_code=500, detail="Failed to update lead status")
 
 @app.post("/api/lead")
 @limiter.limit("10/minute")

@@ -24,6 +24,21 @@ const SPEND_LABEL: Record<string, string> = {
   'over-150k': '> 150k €',
 };
 
+const STATUSES = ['new', 'contacted', 'qualified', 'won', 'lost', 'archived'] as const;
+const STATUS_STYLE: Record<string, string> = {
+  new:       'bg-[#A855F7]/20 text-[#C9A0FF] border-[#A855F7]/40',
+  contacted: 'bg-blue-500/15 text-blue-300 border-blue-500/40',
+  qualified: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+  won:       'bg-green-500/15 text-green-300 border-green-500/40',
+  lost:      'bg-red-500/15 text-red-300 border-red-500/40',
+  archived:  'bg-white/10 text-gray-400 border-white/15',
+};
+const STATUS_LABEL: Record<string, string> = {
+  new: 'Neu', contacted: 'Kontaktiert', qualified: 'Qualifiziert',
+  won: 'Gewonnen', lost: 'Verloren', archived: 'Archiviert',
+};
+const badgeClass = (s: string) => STATUS_STYLE[s] || STATUS_STYLE.archived;
+
 const fmtDate = (iso: string | null): string => {
   if (!iso) return '—';
   try {
@@ -66,6 +81,26 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
       setState('error');
     }
   }, [user]);
+
+  const [saving, setSaving] = React.useState(false);
+  const updateStatus = React.useCallback(async (id: string, status: string) => {
+    if (!user?.token) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+      setSelected((prev) => (prev && prev.id === id ? { ...prev, status } : prev));
+    } catch {
+      load(); // bei Fehler frisch laden
+    } finally {
+      setSaving(false);
+    }
+  }, [user, load]);
 
   React.useEffect(() => { load(); }, [load]);
 
@@ -143,12 +178,8 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                     <td className="px-5 py-4 text-gray-300">{l.brand || '—'}</td>
                     <td className="px-5 py-4 text-gray-300 whitespace-nowrap">{l.ad_spend ? (SPEND_LABEL[l.ad_spend] || l.ad_spend) : '—'}</td>
                     <td className="px-5 py-4">
-                      <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider ${
-                        l.status === 'new'
-                          ? 'bg-[#A855F7]/20 text-[#C9A0FF] border border-[#A855F7]/40'
-                          : 'bg-white/10 text-gray-300 border border-white/15'
-                      }`}>
-                        {l.status || 'new'}
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider border ${badgeClass(l.status || 'new')}`}>
+                        {STATUS_LABEL[l.status] || l.status || 'new'}
                       </span>
                     </td>
                   </tr>
@@ -175,6 +206,29 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                 <h2 className="text-2xl font-bold text-white">{selected.name || '—'}</h2>
               </div>
               <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+
+            {/* Status-Pipeline */}
+            <div className="mb-6">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">
+                Status {saving && <span className="text-[#A855F7]">· speichert…</span>}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    disabled={saving}
+                    onClick={() => updateStatus(selected.id, s)}
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider border transition-all disabled:opacity-50 ${
+                      selected.status === s
+                        ? badgeClass(s) + ' ring-1 ring-white/30'
+                        : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    {STATUS_LABEL[s]}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <dl className="space-y-4 text-sm">
