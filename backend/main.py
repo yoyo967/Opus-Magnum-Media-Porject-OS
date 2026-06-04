@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import uvicorn
 import os
 import secrets
@@ -19,13 +22,43 @@ app = FastAPI(
     version="3.0.0"
 )
 
-# Enable CORS for the Vite frontend
+# --- Rate limiting (slowapi). In-memory, per-instance: Cloud Run may run several
+# instances, so this is not a global limit, but it stops single-source abuse
+# (spam floods, login brute-force). Key on the real client IP from X-Forwarded-For
+# (Cloud Run sets it); fall back to the peer address.
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return get_remote_address(request)
+
+limiter = Limiter(key_func=_client_ip)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# --- CORS: restrict to known first-party origins (no more "*").
+# Override/extend at deploy time via ALLOWED_ORIGINS (comma-separated env var).
+_DEFAULT_ORIGINS = [
+    "https://mirrou.studio",
+    "https://www.mirrou.studio",
+    "https://app.mirrou.studio",
+    "https://studio-4188712377-b3681.web.app",
+    "https://studio-4188712377-b3681.firebaseapp.com",
+    "https://opus-magnum-media-v3-923137317598.europe-west3.run.app",
+    "https://opus-magnum-media-v3-iqy7yeycta-ey.a.run.app",
+    "http://localhost:3000",
+    "http://localhost:4173",
+    "http://localhost:5173",
+]
+_env_origins = os.environ.get("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = [o.strip() for o in _env_origins.split(",") if o.strip()] or _DEFAULT_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Update for production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Database
@@ -130,34 +163,35 @@ def get_shared_key(email: str = Depends(get_current_user_email)):
     return {"geminiApiKey": shared_key}
 
 @app.post("/api/lead")
-def create_lead(request: LeadRequest):
+@limiter.limit("10/minute")
+def create_lead(request: Request, lead: LeadRequest):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
-    
+
     # 1. Honeypot check
-    if request.company_website and request.company_website.strip() != "":
+    if lead.company_website and lead.company_website.strip() != "":
         # Silently absorb spam (fail-safe/spam-sink)
         print("Honeypot triggered! Spam lead ignored.")
         return {"status": "success", "message": "Lead submitted successfully (spam-sink)"}
-        
+
     # 2. Validation
-    if not request.name.strip() or not request.email.strip() or not request.message.strip():
+    if not lead.name.strip() or not lead.email.strip() or not lead.message.strip():
         raise HTTPException(status_code=400, detail="Name, Email, and Message are required fields")
-        
-    if not request.consent:
+
+    if not lead.consent:
         raise HTTPException(status_code=400, detail="Privacy policy consent is required")
-        
+
     # 3. Write to Firestore tenants/mirrou/leads/
     try:
         leads_ref = db.collection('tenants').document('mirrou').collection('leads')
         lead_data = {
-            "name": request.name.strip(),
-            "email": request.email.lower().strip(),
-            "brand": request.brand.strip() if request.brand else "",
-            "website": request.website.strip() if request.website else "",
-            "ad_spend": request.ad_spend,
-            "message": request.message.strip(),
-            "consent": request.consent,
+            "name": lead.name.strip(),
+            "email": lead.email.lower().strip(),
+            "brand": lead.brand.strip() if lead.brand else "",
+            "website": lead.website.strip() if lead.website else "",
+            "ad_spend": lead.ad_spend,
+            "message": lead.message.strip(),
+            "consent": lead.consent,
             "created_at": firestore.SERVER_TIMESTAMP,
             "status": "new"
         }
@@ -168,79 +202,81 @@ def create_lead(request: LeadRequest):
         raise HTTPException(status_code=500, detail="Failed to save lead database entry")
 
 @app.post("/api/auth/login")
-def login(request: AuthRequest):
+@limiter.limit("10/minute")
+def login(request: Request, auth: AuthRequest):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
-    
+
     users_ref = db.collection('tenants')
-    query = users_ref.where(filter=firestore.FieldFilter('email', '==', request.email.lower())).limit(1).stream()
-    
+    query = users_ref.where(filter=firestore.FieldFilter('email', '==', auth.email.lower())).limit(1).stream()
+
     user_doc = None
     for doc in query:
         user_doc = doc
         break
-        
+
     if not user_doc:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-        
+
     user_data = user_doc.to_dict()
-    if not verify_password(request.password, user_data['hashed_password']):
+    if not verify_password(auth.password, user_data['hashed_password']):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-        
-    access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    
+
+    access_token = create_access_token(data={"sub": auth.email.lower(), "role": "operator"})
+
     # Ensure tenant membership document exists (backward compatibility)
     tenant_id = user_doc.id
     try:
         member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
         if not member_ref.get().exists:
             member_ref.set({
-                "email": request.email.lower(),
+                "email": auth.email.lower(),
                 "role": "Owner",
                 "joined_at": firestore.SERVER_TIMESTAMP,
                 "permissions": ["all"]
             })
     except Exception as e:
         print("Warning: Failed to ensure tenant membership:", e)
-        
-    return {"token": access_token, "tenant_id": tenant_id, "email": request.email.lower(), "firebaseToken": mint_firebase_token(tenant_id)}
+
+    return {"token": access_token, "tenant_id": tenant_id, "email": auth.email.lower(), "firebaseToken": mint_firebase_token(tenant_id)}
 
 @app.post("/api/auth/register")
-def register(request: AuthRequest):
+@limiter.limit("5/minute")
+def register(request: Request, auth: AuthRequest):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
-        
+
     users_ref = db.collection('tenants')
-    query = users_ref.where(filter=firestore.FieldFilter('email', '==', request.email.lower())).limit(1).stream()
-    
+    query = users_ref.where(filter=firestore.FieldFilter('email', '==', auth.email.lower())).limit(1).stream()
+
     for doc in query:
         raise HTTPException(status_code=400, detail="Email already registered")
-        
-    hashed_password = get_password_hash(request.password)
+
+    hashed_password = get_password_hash(auth.password)
     tenant_data = {
-        "email": request.email.lower(),
+        "email": auth.email.lower(),
         "hashed_password": hashed_password,
         "created_at": firestore.SERVER_TIMESTAMP,
         "role": "Operator"
     }
-    
+
     update_time, tenant_ref = users_ref.add(tenant_data)
     tenant_id = tenant_ref.id
-    
+
     # Create tenant membership document
     try:
         member_ref = db.collection('tenants').document(tenant_id).collection('members').document(tenant_id)
         member_ref.set({
-            "email": request.email.lower(),
+            "email": auth.email.lower(),
             "role": "Owner",
             "joined_at": firestore.SERVER_TIMESTAMP,
             "permissions": ["all"]
         })
     except Exception as e:
         print("Warning: Failed to create tenant membership:", e)
-        
-    access_token = create_access_token(data={"sub": request.email.lower(), "role": "operator"})
-    return {"token": access_token, "tenant_id": tenant_id, "email": request.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_id)}
+
+    access_token = create_access_token(data={"sub": auth.email.lower(), "role": "operator"})
+    return {"token": access_token, "tenant_id": tenant_id, "email": auth.email.lower(), "status": "tenant created", "firebaseToken": mint_firebase_token(tenant_id)}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
