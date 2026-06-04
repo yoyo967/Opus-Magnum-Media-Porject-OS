@@ -178,8 +178,8 @@ Basis-URL (live): `https://opus-magnum-ai-backend-923137317598.europe-west3.run.
 | `POST` | `/api/auth/login` | — | `{email,password}` → `{token, uid, tenant_id, email, firebaseToken}` |
 | `GET` | `/api/tenant/shared-key` | **Bearer JWT** | → `{geminiApiKey}` (aus Secret Manager; nur In-Memory beim Client) |
 | `POST` | `/api/lead` | — | `{name,email,brand,website?,ad_spend?,message,consent,company_website?}` → `{status,message}` |
-| `GET` | `/api/leads` | **Bearer JWT** | → `{leads:[…], count}` — Lead-Inbox; liest `tenants/mirrou/leads` via Admin SDK (umgeht Rules). *Aktuell jeder Auth-User; bei SaaS auf mirrou-Mitglieder/Admin einschränken.* |
-| `PATCH` | `/api/leads/{id}` | **Bearer JWT** | `{status}` ∈ {new,contacted,qualified,won,lost,archived} → setzt Pipeline-Status (+ `updated_at`/`updated_by`) |
+| `GET` | `/api/leads` | **JWT · nur Mirrou-Member** | → `{leads:[…], count}` — Lead-Inbox; liest `tenants/mirrou/leads` via Admin SDK. `require_mirrou_member` erzwingt `tenant_id==mirrou` (Fremde → 403). |
+| `PATCH` | `/api/leads/{id}` | **JWT · nur Mirrou-Member** | `{status}` ∈ {new,contacted,qualified,won,lost,archived} → setzt Pipeline-Status (+ `updated_at`/`updated_by`) |
 
 **`/api/lead`-Logik:** Honeypot (`company_website` → Spam-Sink, 200), Pflichtfelder + `consent` erzwungen, Schreiben nach `tenants/mirrou/leads` via Admin SDK (`SERVER_TIMESTAMP`, `status:"new"`).
 **CORS:** First-Party-Allowlist (`mirrou.studio`, `www`/`app.`, `.web.app`, Cockpit, `localhost`), überschreibbar via `ALLOWED_ORIGINS`-Env. **Rate-Limiting** (slowapi, keyed auf `X-Forwarded-For`): `/api/lead` 10/min · Login 10/min · Register 5/min.
