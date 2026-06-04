@@ -110,7 +110,9 @@ const Footer: React.FC<FooterProps> = ({ navigateTo }) => {
             <div className="lg:col-span-2">
                 <h4 className="text-white font-bold mb-6 text-[10px] uppercase tracking-[0.2em] font-mono text-green-400">Connect</h4>
                 <ul className="space-y-2">
-                    <FooterLink label="LinkedIn Profile" href="https://www.linkedin.com/in/yahya-yildirim-8294a2153/" />
+                    <FooterLink label="Opus Magnum Media" href="https://www.linkedin.com/company/omm-opus-magnum-media/" />
+                    <FooterLink label="Mirrou Studio" href="https://www.linkedin.com/company/mirrou-studio/" />
+                    <FooterLink label="LinkedIn (Architect)" href="https://www.linkedin.com/in/yahya-yildirim-8294a2153/" />
                     <FooterLink label="DCI Berlin" href="https://digitalcareerinstitute.org" />
                     <FooterLink label="Contact Architect" href="mailto:yahya.yildirim@dci-student.org" />
                 </ul>
