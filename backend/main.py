@@ -75,8 +75,12 @@ except Exception as e:
 # Cross-project: benoetigt zur Laufzeit IAM-Foederation (runtime-SA mit
 # roles/iam.serviceAccountTokenCreator auf der Ziel-firebase-adminsdk-SA).
 FIREBASE_PROJECT = os.environ.get("FIREBASE_PROJECT_ID", "studio-4188712377-b3681")
+# Cross-Projekt Custom Tokens: AS der firebase-adminsdk-SA des Firebase-Projekts signieren
+# (IAM signBlob-Impersonation) — sonst lehnt der Client das Token ab (CREDENTIAL_MISMATCH).
+# Voraussetzung: Runtime-SA hat roles/iam.serviceAccountTokenCreator AUF dieser SA.
+FIREBASE_SIGNER_SA = os.environ.get("FIREBASE_SIGNER_SA", "firebase-adminsdk-fbsvc@studio-4188712377-b3681.iam.gserviceaccount.com")
 try:
-    firebase_admin.initialize_app(options={"projectId": FIREBASE_PROJECT})
+    firebase_admin.initialize_app(options={"projectId": FIREBASE_PROJECT, "serviceAccountId": FIREBASE_SIGNER_SA})
 except Exception as e:
     print("Warning: firebase-admin could not be initialized:", e)
 
