@@ -1,5 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
-import { MIRROU_TOOL_PROMPTS } from '@/tenants';
+import { buildMirrouContext } from '@/tenants';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -92,7 +92,7 @@ export const PrometheusTool: React.FC<{ navigateTo: (page: string) => void; }> =
                 model: 'gemini-2.5-pro', // Upgraded to Gemini 3.0
                 contents: prompt,
                 config: {
-                    systemInstruction: MIRROU_TOOL_PROMPTS.prometheus,
+                    systemInstruction: buildMirrouContext('prometheus'),
                     thinkingConfig: { thinkingBudget: 2048 } // Enable Thinking Mode for deeper reasoning
                 }
             });

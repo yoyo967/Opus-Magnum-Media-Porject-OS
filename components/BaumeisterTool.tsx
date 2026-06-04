@@ -3,7 +3,7 @@ import { getGeminiClient } from '@/utils/geminiClient';
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toast } from './Toast';
-import { MIRROU_TOOL_PROMPTS } from '../tenants/mirrou/prompts';
+import { buildMirrouContext } from '../tenants';
 
 // --- ICONS ---
 const CheckIcon: React.FC = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -229,7 +229,7 @@ export const BaumeisterTool: React.FC = () => {
         - KI-Einsatz-Ebene: ${briefAiLevel}
 
         System-Instruktion:
-        ${MIRROU_TOOL_PROMPTS.baumeister}
+        ${buildMirrouContext('baumeister')}
 
         Befolge alle Design- und Strukturrichtlinien. Antworte ausschließlich mit dem JSON-Schema.`;
 
