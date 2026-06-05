@@ -12,6 +12,8 @@ interface OutputActionsProps {
   category?: DocCategory;
   /** Optionale Kurzbeschreibung für „Als Task". */
   taskDescription?: string;
+  /** L3-Verkettung: Buttons „→ An nächstes Tool senden" (übergibt Output via setToolInput). */
+  chainTargets?: { tool: string; label: string; prompt?: string }[];
 }
 
 const slug = (s: string) =>
@@ -43,8 +45,9 @@ const OutputActions: React.FC<OutputActionsProps> = ({
   title = 'Opus Magnum Output',
   category = 'knowledge',
   taskDescription,
+  chainTargets,
 }) => {
-  const { addDocument, addTask } = useTasks();
+  const { addDocument, addTask, setToolInput } = useTasks();
   const [msg, setMsg] = React.useState('');
   const flash = (m: string) => {
     setMsg(m);
@@ -119,6 +122,17 @@ const OutputActions: React.FC<OutputActionsProps> = ({
       <button onClick={printPdf} className={btn} title="Als PDF drucken/speichern">⎙ PDF</button>
       <button onClick={saveWorkspace} className={btn} title="Als geteiltes Dokument im Workspace speichern">★ In Workspace</button>
       <button onClick={makeTask} className={btn} title="Als Task im Masterpiece anlegen">✓ Als Task</button>
+      {chainTargets && chainTargets.length > 0 && <span className="text-gray-700 mx-1 select-none">|</span>}
+      {chainTargets?.map((t) => (
+        <button
+          key={t.tool}
+          onClick={() => { setToolInput({ tool: t.tool, prompt: t.prompt ?? content, sourceTaskId: -1 }); flash('→ ' + t.label); }}
+          className={`${btn} border-[#A855F7]/40 text-[#C9A0FF] hover:border-[#A855F7]`}
+          title={`Output an ${t.label} übergeben und dorthin wechseln`}
+        >
+          → {t.label}
+        </button>
+      ))}
       {msg && <span className="text-[11px] text-[#A855F7] font-mono ml-1">{msg}</span>}
     </div>
   );

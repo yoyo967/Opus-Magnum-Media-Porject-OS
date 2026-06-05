@@ -589,6 +589,11 @@ export const BaumeisterTool: React.FC = () => {
                                         content={briefToMarkdown(briefData)}
                                         title={`Creative Brief – ${briefData.brand_name || briefBrand}`}
                                         category="strategy"
+                                        chainTargets={[
+                                            { tool: 'visionar', label: 'Visual (Visionär)', prompt: briefData.hooks?.[0]?.visual_idea || briefToMarkdown(briefData) },
+                                            { tool: 'markenwaechter', label: 'Brand-Check', prompt: briefToMarkdown(briefData) },
+                                            { tool: 'auditor', label: 'Compliance', prompt: briefToMarkdown(briefData) },
+                                        ]}
                                     />
                                 </div>
                             ) : (

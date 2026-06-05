@@ -22,7 +22,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 export const MarkenwaechterTool: React.FC = () => {
-    const { brandGuidelines, setBrandGuidelines } = useTasks();
+    const { brandGuidelines, setBrandGuidelines, toolInput } = useTasks();
     const [activeTab, setActiveTab] = useState('settings');
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -49,6 +49,14 @@ export const MarkenwaechterTool: React.FC = () => {
     const [checkText, setCheckText] = useState('');
     const [checkImage, setCheckImage] = useState<{ file: File, preview: string } | null>(null);
     const [checkResult, setCheckResult] = useState<string | null>(null);
+
+    // L3-Verkettung: eingehenden Brief/Text vom vorigen Tool als Prüf-Text übernehmen.
+    useEffect(() => {
+        if (toolInput?.tool === 'markenwaechter' && toolInput.prompt) {
+            setCheckText(toolInput.prompt);
+            setActiveTab('textCheck');
+        }
+    }, [toolInput]);
     const [isChecking, setIsChecking] = useState(false);
 
     // Rewriter State

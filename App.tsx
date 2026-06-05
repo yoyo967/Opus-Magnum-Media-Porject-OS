@@ -85,7 +85,7 @@ const AppContent = () => {
   const [isCommandBarOpen, setIsCommandBarOpen] = React.useState(false);
   const [systemToast, setSystemToast] = React.useState<string | null>(null);
   const [showBootMsg, setShowBootMsg] = React.useState(true);
-  const { authError, user, geminiApiKey } = useTasks();
+  const { authError, user, geminiApiKey, toolInput } = useTasks();
 
   const navigateTo = (page: string) => {
     setCurrentPage(page);
@@ -106,6 +106,11 @@ const AppContent = () => {
         setCurrentPage('home');
     }
   }, [user, geminiApiKey, currentPage]);
+
+  // L3-Verkettung: "An nächstes Tool senden" (setToolInput) navigiert automatisch dorthin.
+  React.useEffect(() => {
+    if (toolInput && toolInput.tool) navigateTo(toolInput.tool);
+  }, [toolInput]);
 
   return (
       <div className="bg-[#0A0A0A] text-[#F5F5F5] antialiased selection:bg-purple-500/30 selection:text-white flex flex-col min-h-screen">

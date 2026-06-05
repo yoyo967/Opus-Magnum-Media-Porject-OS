@@ -64,7 +64,7 @@ const KeyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBo
 
 // --- COMPONENT ---
 export const AuditorTool: React.FC = () => {
-    const { tasks, addTask, updateTask } = useTasks();
+    const { tasks, addTask, updateTask, toolInput } = useTasks();
     const [apiKeySelected, setApiKeySelected] = useState(false);
     const [isSessionActive, setIsSessionActive] = useState(false);
     const [statusMessage, setStatusMessage] = useState('Start session to speak with AI.');
@@ -78,6 +78,14 @@ export const AuditorTool: React.FC = () => {
     const [channels, setChannels] = useState('Meta Ads, TikTok, Instagram Store');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [auditReport, setAuditReport] = useState<any | null>(null);
+
+    // L3-Verkettung: eingehenden Brief/Text vom vorigen Tool als Copy übernehmen.
+    useEffect(() => {
+        if (toolInput?.tool === 'auditor' && toolInput.prompt) {
+            setCopy(toolInput.prompt);
+            setActiveMode('compliance-checker');
+        }
+    }, [toolInput]);
     const [auditError, setAuditError] = useState<string | null>(null);
 
     const complianceSchema = {
