@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -96,7 +97,7 @@ export const ResonatorTool: React.FC<{ navigateTo: (page: string) => void; }> = 
             const textResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
-                config: { responseMimeType: "application/json", responseSchema: socialPostSchema }
+                config: { responseMimeType: "application/json", responseSchema: socialPostSchema, systemInstruction: MIRROU_KNOWLEDGE }
             });
             
             let { posts }: { posts: SocialPost[] } = JSON.parse(textResponse.text);

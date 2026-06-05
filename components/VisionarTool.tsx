@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { withMirrouKnowledge } from '@/tenants';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -196,7 +197,7 @@ export const VisionarTool: React.FC<VisionarToolProps> = ({ navigateTo, isEmbedd
                 mimeType = editImage.file.type;
             }
 
-            const prompt = "Analyze this image for a marketing campaign. Provide a description, 5 relevant tags, and a sentiment score (0-100). Respond in JSON.";
+            const prompt = withMirrouKnowledge("Analysiere dieses Bild für eine Marketing-Kampagne durch Mirrous Linse (ICP/Markt/Compliance). Liefere description, 5 relevante tags und einen sentiment score (0-100). Antworte als JSON.");
             
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro for better vision analysis
