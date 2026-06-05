@@ -3,7 +3,7 @@ import { getGeminiClient } from '@/utils/geminiClient';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob, FunctionDeclaration, Type } from '@google/genai';
 import { useTasks } from '../contexts/AppContext';
-import { MIRROU_TOOL_PROMPTS } from '../tenants/mirrou/prompts';
+import { buildMirrouContext } from '../tenants';
 
 // --- HELPER FUNCTIONS ---
 function decode(base64: string) {
@@ -125,7 +125,7 @@ export const AuditorTool: React.FC = () => {
         - Kanäle: ${channels}
 
         System-Instruktion:
-        ${MIRROU_TOOL_PROMPTS.auditor}
+        ${buildMirrouContext('auditor')}
 
         Führe eine detaillierte Prüfung durch bezüglich:
         1. EU AI Act Art. 50 (Transparenz und Kennzeichnung von KI-Inhalten)

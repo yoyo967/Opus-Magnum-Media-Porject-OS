@@ -52,3 +52,11 @@ export function buildMirrouContext(toolKey: MirrouToolKey): string {
   const toolPrompt = MIRROU_TOOL_PROMPTS[toolKey] ?? '';
   return `${MIRROU_KNOWLEDGE}\n\n---\n# DEINE SPEZIFISCHE ROLLE\n${toolPrompt}`;
 }
+
+/**
+ * Erdet ein beliebiges Tool OHNE eigenen Mirrou-Prompt: geteilte KB + dessen
+ * vorhandene Basis-Instruktion. Für Tools wie Visionär/Animator/Resonator.
+ */
+export function withMirrouKnowledge(baseInstruction: string): string {
+  return `${MIRROU_KNOWLEDGE}\n\n---\n${baseInstruction}`;
+}

@@ -1,5 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
-import { MIRROU_TOOL_PROMPTS } from '@/tenants';
+import { buildMirrouContext } from '@/tenants';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -79,7 +79,7 @@ export const SpaeherTool: React.FC<SpaeherToolProps> = ({ isEmbedded }) => {
 
         const config: any = {
              responseMimeType: "application/json",
-             systemInstruction: MIRROU_TOOL_PROMPTS.spaeher
+             systemInstruction: buildMirrouContext('spaeher')
         };
         
         // Only add tools if we are actually using search
