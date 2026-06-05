@@ -19,7 +19,7 @@ Heute = **Werkzeugkasten aus Prompts**: jedes Tool = eine Seite + ein single-sho
 | Level | Was | Status |
 |---|---|---|
 | **L1 — Toolbox** | Auth, geteilter Mirrou-Tenant, EU-Datenlayer, Deploy, Lead-Loop, Security (JWT/CORS/Rate-Limit) | ✅ erledigt |
-| **L2 — Kontext-Schicht** | kanonische **Mirrou Knowledge Base** (Brand/ICP/Benchmarks/Angebot/Voice/Gewinner-Outputs); **jedes Tool grundet automatisch** darauf | 🟡 **Pilot live** (2026-06-04): `tenants/mirrou/knowledge.ts` + `buildMirrouContext()` in Baumeister/Prometheus/Markenwächter. Nächste Schritte: A/B prüfen → Rollout auf weitere Tools → L2.5 KB nach Firestore (im Cockpit editierbar) |
+| **L2 — Kontext-Schicht** | kanonische **Mirrou Knowledge Base** (Brand/ICP/Benchmarks/Angebot/Voice/Gewinner-Outputs); **jedes Tool grundet automatisch** darauf | 🟡 **Rollout läuft:** `tenants/mirrou/knowledge.ts` + `buildMirrouContext()` — **5 Agenten geerdet** (Baumeister, Prometheus, Markenwächter, Späher, Auditor) + Helper `withMirrouKnowledge()` für Tools ohne eigenen Prompt. **Nächste Welle:** Creative-Agenten (Visionär, Animator, Resonator, Persona, Analytiker) erden → dann L2.5 (KB nach Firestore, im Cockpit editierbar) |
 | **L3 — Orchestrierung** | CommandBar (kann schon Function-Calling) → echter Orchestrator: liest Workspace, **verkettet Tools**; 1–2 echte **Playbooks** | geplant |
 | **L4 — Proaktiv + Lernend** | Trigger (Lead rein → Auto-Entwurf, Mensch gibt frei) + Feedback-Loop (was gewinnt → zurück in die KB) | Vision |
 | **L5 — Autonome Frontier Firm + SaaS** | OS fährt Kern-Ops mit Mensch-Checkpoints; an Mirrou bewiesen → Mandanten-SaaS (`byok`/`metered`) | decision-gated |
