@@ -123,6 +123,8 @@ Vollständiger Blueprint: [`opus-magnum-project-os.md`](https://github.com/yoyo9
 
 ## 5. Die Operator-Agenten (~49 Tools)
 
+> **Wie Mirrou das OS operativ nutzt** (Agenten → Wertschöpfungs-Playbooks → Team-Rollen): [`docs/MIRROU_OPERATING_MODEL.md`](docs/MIRROU_OPERATING_MODEL.md).
+
 Jedes Tool ist eine lazy-geladene Seite ([`pages/*.tsx`](pages/), Registry in [`App.tsx`](App.tsx)). Navigation ist **State-basiert** (`currentPage`), nicht URL-basiert. Tenant-spezifische System-Prompts: [`tenants/mirrou/prompts.ts`](tenants/mirrou/prompts.ts).
 
 ### Verdrahtete Mirrou-Tenant-Prompts (kanonisch)
