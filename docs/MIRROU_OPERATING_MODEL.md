@@ -64,5 +64,12 @@ Mirrou ist ein **AI-natives Performance-Creative-Studio** (D2C Beauty/Health, DA
 3. **Trimmen:** Triage (§4) umsetzen.
 4. **Branding + Rollen:** Mirrou-Skin (Onyx/Gold/Ivory/Cormorant) global; Agenten den Rollen (§3) zuordnen.
 
+## ⚠️ Design-Entscheidung: Mirrou-Methode vs. Mirrou-eigene-Marke vs. Kunden-Marke
+Die Mirrou-KB mischt zwei Ebenen, die unterschiedlich breit gelten:
+- **(a) Methode & Compliance & Markt** (5-Schritt-Algorithmus, HCVO/EU-AI-Act-Labeling, ICP, Benchmarks) → gilt für **jede** Arbeit, auch Kundenprojekte. **Immer an.**
+- **(b) Mirrous *eigene* Markenidentität** (Voice, Onyx/Gold/Ivory, Verbotsliste) → gilt **nur** für *Mirrous eigene* Inhalte; bei **Kundenarbeit** muss die **Kunden-Marke** rein.
+
+**Folge:** Reasoning/Strategie/Compliance-Agenten breit erden (a). Marken-/Asset-erzeugende Agenten (Copy, Bild, Video) NICHT blind mit Mirrous Marke erden — sonst werden Kunden-Deliverables „mirrou-isiert". Für echte Kundenarbeit: **Multi-Brand-Schicht** — Methode immer an, „aktive Marke" pro Projekt wählbar (Mirrou als Default). → das ist der saubere Pfad Richtung SaaS (Seite B).
+
 ## Definition of „Mirrou Studio läuft auf dem OS"
 **Playbook 2 läuft end-to-end:** ein Brief → markenkonforme, compliance-geprüfte Assets → ausgespielt → gemessen, alle Schritte Mirrou-geerdet, Mensch nur als Checkpoint.
