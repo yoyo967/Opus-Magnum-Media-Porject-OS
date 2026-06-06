@@ -11,7 +11,7 @@
  */
 import { MIRROU_TOOL_PROMPTS, type MirrouToolKey } from './prompts';
 
-export const MIRROU_KNOWLEDGE = `Du arbeitest für MIRROU CREATIVE STUDIO. Wende dieses Wissen IMMER an — auch wenn der Nutzer es nicht wiederholt.
+export const DEFAULT_MIRROU_KNOWLEDGE = `Du arbeitest für MIRROU CREATIVE STUDIO. Wende dieses Wissen IMMER an — auch wenn der Nutzer es nicht wiederholt.
 
 # MARKE
 - Positionierung: AI-natives Performance-Creative-Studio, Premium „Dark Luxury".
@@ -43,6 +43,25 @@ Creative Audit → Visual Brief → Hybrid Execution (Pure AI / AI-Assisted / Hu
 - Nutze KONKRETE Zahlen nur, wenn im Input vorhanden — sonst Größenordnungen + Methode nennen, niemals Zahlen erfinden.
 
 Wenn etwas der Voice oder Compliance widerspricht, korrigiere es aktiv.`;
+
+/**
+ * Aktive KB — zur Laufzeit überschreibbar (Firestore / Cockpit-Editor).
+ * Als `let` exportiert: jeder Importer (Tools, buildMirrouContext,
+ * withMirrouKnowledge) liest den aktuellen Wert über das ESM-Live-Binding zur
+ * Aufrufzeit → ein Firestore-Update propagiert ohne Redeploy an alle 18
+ * geerdeten Tools + den Orchestrator (L2.5).
+ */
+export let MIRROU_KNOWLEDGE = DEFAULT_MIRROU_KNOWLEDGE;
+
+/** Aktive KB überschreiben (Firestore-Load oder Cockpit-Editor). Leer → Default. */
+export function setMirrouKnowledge(text: string): void {
+  MIRROU_KNOWLEDGE = text && text.trim() ? text : DEFAULT_MIRROU_KNOWLEDGE;
+}
+
+/** Aktive KB lesen (für den Editor / Nicht-Binding-Consumer). */
+export function getMirrouKnowledge(): string {
+  return MIRROU_KNOWLEDGE;
+}
 
 /**
  * Baut die vollständige systemInstruction für ein Tool:

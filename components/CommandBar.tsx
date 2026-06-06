@@ -18,7 +18,7 @@ type Message = {
     text: string;
 };
 
-const PAGES = [ 'home', 'campaign', 'meisterwerk', 'visionar', 'stratege', 'konversator', 'auditor', 'animator', 'dirigent', 'secret', 'masterplan', 'einreichung', 'personalisator', 'orakel', 'mediathek', 'akademie', 'observatorium', 'conductor', 'publisher', 'persona', 'auditorium', 'analytiker', 'markenwaechter', 'berichterstatter', 'nexus', 'kalkulator', 'experimentator', 'prometheus', 'emailmarketing', 'interimmanager', 'gespraechsleiter', 'resonator', 'kolorit', 'ensemble', 'diplomat', 'chronist', 'sequenzer', 'taktgeber', 'spaeher', 'baumeister', 'leadinbox' ];
+const PAGES = [ 'home', 'campaign', 'meisterwerk', 'visionar', 'stratege', 'konversator', 'auditor', 'animator', 'dirigent', 'secret', 'masterplan', 'einreichung', 'personalisator', 'orakel', 'mediathek', 'akademie', 'observatorium', 'conductor', 'publisher', 'persona', 'auditorium', 'analytiker', 'markenwaechter', 'berichterstatter', 'nexus', 'kalkulator', 'experimentator', 'prometheus', 'emailmarketing', 'interimmanager', 'gespraechsleiter', 'resonator', 'kolorit', 'ensemble', 'diplomat', 'chronist', 'sequenzer', 'taktgeber', 'spaeher', 'baumeister', 'leadinbox', 'knowledgebase' ];
 
 // Purpose map so the orchestrator routes a command to the RIGHT tool with a
 // good prompt (not just the tool name). Keep in sync with the Header dropdowns.
@@ -45,7 +45,8 @@ const TOOL_CATALOG = `Tool-Katalog (für navigateTo / setToolInput):
 - kalkulator: Budgets/Kosten kalkulieren
 - dirigent: Projektstatus analysieren + Empfehlungen
 - nexus: das gesamte Wissen des Project OS durchsuchen
-- systemaudit: ehrlicher Live-Systemzustand des OS`;
+- systemaudit: ehrlicher Live-Systemzustand des OS
+- knowledgebase: die Mirrou Knowledge Base ansehen/bearbeiten (erdet alle Tools)`;
 
 export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; navigateTo: (page: string) => void; }> = ({ isOpen, onClose, navigateTo }) => {
     const { addTask, setToolInput } = useTasks();

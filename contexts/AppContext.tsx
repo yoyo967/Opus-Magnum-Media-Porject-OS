@@ -6,6 +6,7 @@ import { setActiveGeminiKey } from '@/utils/geminiClient';
 import { signInWithCustomToken, signOut } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch } from 'firebase/firestore';
+import { setMirrouKnowledge } from '../tenants';
 import { ACTIVE_TENANT } from '../tenants';
 
 // --- INTERFACES ---
@@ -492,6 +493,17 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 }
             });
 
+            // 8. Sync Mirrou Knowledge Base (L2.5 — cockpit-editable brain).
+            // Reactive: an edit in the cockpit propagates live to every grounded
+            // tool + the orchestrator (they read MIRROU_KNOWLEDGE at call time).
+            const knowledgeRef = doc(db, 'tenants', tenantId, 'knowledge', 'main');
+            const unsubscribeKnowledge = onSnapshot(knowledgeRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const content = snapshot.data()?.content;
+                    if (typeof content === 'string') setMirrouKnowledge(content);
+                }
+            });
+
             return () => {
                 unsubscribeTasks();
                 unsubscribeDocs();
@@ -500,6 +512,7 @@ export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 unsubscribeUserDoc();
                 unsubscribeStrategyBrief();
                 unsubscribeCampaignBrief();
+                unsubscribeKnowledge();
             };
         }
     }, [user, isOfflineMode]);

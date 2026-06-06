@@ -207,6 +207,7 @@ const Header: React.FC<HeaderProps> = ({ navigateTo, currentPage, onOpenCommandB
                  <DropdownItem page="nexus" currentPage={currentPage} navigateTo={navigateTo} title="Nexus" description="Searches the entire knowledge of the Project OS." />
                 <DropdownItem page="prometheus" currentPage={currentPage} navigateTo={navigateTo} title="Prometheus" description="Answers system-wide, strategic questions." />
                 <DropdownItem page="systemaudit" currentPage={currentPage} navigateTo={navigateTo} title="System Audit" description="Interactive status report of the Project OS." />
+                <DropdownItem page="knowledgebase" currentPage={currentPage} navigateTo={navigateTo} title="Knowledge Base" description="Mirrous geteiltes Wissen — erdet alle Tools (L2.5, live editierbar)." />
                 <DropdownItem page="akademie" currentPage={currentPage} navigateTo={navigateTo} title="Academy" description="The central knowledge base and learning platform." />
                 <DropdownItem page="markenwaechter" currentPage={currentPage} navigateTo={navigateTo} title="Brand Guardian" description="Defines and verifies brand guidelines." />
                 <DropdownItem page="brandingkit" currentPage={currentPage} navigateTo={navigateTo} title="Branding Kit" description="High-end identity guidelines and assets." />

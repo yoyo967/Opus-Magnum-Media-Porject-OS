@@ -61,6 +61,7 @@ const Auth = React.lazy(() => import('./pages/Auth'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const MirrouBenchmarks = React.lazy(() => import('./pages/MirrouBenchmarks'));
 const LeadInbox = React.lazy(() => import('./pages/LeadInbox'));
+const KnowledgeBase = React.lazy(() => import('./pages/KnowledgeBase'));
 
 const SystemBootNotification: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     React.useEffect(() => {
@@ -178,6 +179,7 @@ const AppContent = () => {
           {currentPage === 'aioperator' && <AIOperator navigateTo={navigateTo} />}
           {currentPage === 'mirroubenchmarks' && <MirrouBenchmarks navigateTo={navigateTo} />}
           {currentPage === 'leadinbox' && <LeadInbox navigateTo={navigateTo} />}
+          {currentPage === 'knowledgebase' && <KnowledgeBase navigateTo={navigateTo} />}
           {/* Legal Pages */}
           {currentPage === 'imprint' && <Legal type="imprint" navigateTo={navigateTo} />}
           {currentPage === 'privacy' && <Legal type="privacy" navigateTo={navigateTo} />}
