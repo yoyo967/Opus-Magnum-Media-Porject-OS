@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -87,6 +88,7 @@ export const SequenzerTool: React.FC<SequenzerToolProps> = ({ navigateTo, isEmbe
                 contents: prompt,
                 config: { 
                     responseMimeType: "application/json", 
+                    systemInstruction: MIRROU_KNOWLEDGE,
                     responseSchema: sequenceSchema,
                     thinkingConfig: { thinkingBudget: 1024 } // Enable Thinking for strategic sequence planning
                 }

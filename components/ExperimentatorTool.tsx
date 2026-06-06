@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -79,7 +80,7 @@ export const ExperimentatorTool: React.FC<ExperimentatorToolProps> = ({ navigate
             const response = await ai.models.generateContent({ 
                 model: 'gemini-2.5-pro',
                 contents: prompt, 
-                config: { responseMimeType: 'application/json', responseSchema: resultsSchema, thinkingConfig: { thinkingBudget: 1024 } } 
+                config: { systemInstruction: MIRROU_KNOWLEDGE, responseMimeType: 'application/json', responseSchema: resultsSchema, thinkingConfig: { thinkingBudget: 1024 } }
             });
             const results = JSON.parse(response.text);
             updateExperiment(activeExperiment.id, { status: 'completed', results });

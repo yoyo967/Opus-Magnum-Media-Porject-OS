@@ -1,4 +1,5 @@
 import { getGeminiClient, mapGeminiError } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -42,7 +43,7 @@ export const PersonaTool: React.FC<{ navigateTo: (page: string) => void }> = ({ 
             const detailsResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: detailsPrompt,
-                config: { responseMimeType: 'application/json', responseSchema: personaSchema }
+                config: { systemInstruction: MIRROU_KNOWLEDGE, responseMimeType: 'application/json', responseSchema: personaSchema }
             });
             const personaDetails = JSON.parse(detailsResponse.text);
             setGeneratedPersona(personaDetails);

@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -254,6 +255,7 @@ Bitte generiere einen vollständigen Kampagnenplan, der strikt dem JSON-Schema f
                 model: 'gemini-2.5-pro', 
                 contents: prompt,
                 config: {
+                    systemInstruction: MIRROU_KNOWLEDGE,
                     responseMimeType: "application/json",
                     responseSchema: campaignSchema
                 }
@@ -355,7 +357,7 @@ ${(campaign.kpis || []).map(k => `- ${k}`).join('\n')}
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: prompt,
-                config: { responseMimeType: "application/json", responseSchema: wargameSchema }
+                config: { systemInstruction: MIRROU_KNOWLEDGE, responseMimeType: "application/json", responseSchema: wargameSchema }
             });
             setWargameResult(JSON.parse(response.text));
         } catch(e) {

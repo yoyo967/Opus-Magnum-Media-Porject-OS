@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -68,6 +69,7 @@ export const PersonalisatorTool: React.FC<PersonalisatorToolProps> = ({ navigate
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro', // Upgraded to Gemini 2.5 Pro
                 contents: prompt,
+                config: { systemInstruction: MIRROU_KNOWLEDGE },
             });
             setPersonalizedContent(response.text);
         } catch (e) {

@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { withMirrouKnowledge } from '@/tenants';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
@@ -157,7 +158,7 @@ export const KonversatorTool: React.FC<KonversatorToolProps> = ({ isEmbedded }) 
         ];
 
         const campaignContext = campaignBrief ? `CONTEXT: You are advising on the marketing campaign titled "${campaignBrief.campaignTitle}" with the slogan "${campaignBrief.slogan}". Keep all advice relevant to this campaign.` : '';
-        const systemInstruction = `You are a world-class senior marketing consultant. Your name is Konversator. Provide expert advice, creative ideas, and strategic insights. Be concise, actionable, and encouraging. Use markdown for formatting. When using maps, provide place information and be helpful. ${campaignContext}`;
+        const systemInstruction = withMirrouKnowledge(`You are a world-class senior marketing consultant. Your name is Konversator. Provide expert advice, creative ideas, and strategic insights. Be concise, actionable, and encouraging. Use markdown for formatting. When using maps, provide place information and be helpful. ${campaignContext}`);
 
         const config: any = { 
             systemInstruction,

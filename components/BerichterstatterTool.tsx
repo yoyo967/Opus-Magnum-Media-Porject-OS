@@ -1,4 +1,5 @@
 import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -54,7 +55,7 @@ export const BerichterstatterTool: React.FC<BerichterstatterToolProps> = ({ navi
             const response = await ai.models.generateContent({ 
                 model: 'gemini-2.5-pro',
                 contents: prompt,
-                config: { thinkingConfig: { thinkingBudget: 2048 } }
+                config: { systemInstruction: MIRROU_KNOWLEDGE, thinkingConfig: { thinkingBudget: 2048 } }
             });
             setReport(response.text);
         } catch (e) {
