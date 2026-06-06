@@ -3,6 +3,7 @@ import { getGeminiClient } from '@/utils/geminiClient';
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { useTasks } from '../contexts/AppContext';
+import { withMirrouKnowledge } from '../tenants';
 
 // --- ICONS ---
 const MagnumAiIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-purple-400"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456-2.456zM18.259 15.715L18 14.75l-.259 1.035a3.375 3.375 0 00-2.455 2.456L14.25 18l1.036.259a3.375 3.375 0 002.455 2.456L18 21.75l.259-1.035a3.375 3.375 0 00-2.456-2.456z" /></svg>;
@@ -18,6 +19,33 @@ type Message = {
 };
 
 const PAGES = [ 'home', 'campaign', 'meisterwerk', 'visionar', 'stratege', 'konversator', 'auditor', 'animator', 'dirigent', 'secret', 'masterplan', 'einreichung', 'personalisator', 'orakel', 'mediathek', 'akademie', 'observatorium', 'conductor', 'publisher', 'persona', 'auditorium', 'analytiker', 'markenwaechter', 'berichterstatter', 'nexus', 'kalkulator', 'experimentator', 'prometheus', 'emailmarketing', 'interimmanager', 'gespraechsleiter', 'resonator', 'kolorit', 'ensemble', 'diplomat', 'chronist', 'sequenzer', 'taktgeber', 'spaeher', 'baumeister', 'leadinbox' ];
+
+// Purpose map so the orchestrator routes a command to the RIGHT tool with a
+// good prompt (not just the tool name). Keep in sync with the Header dropdowns.
+const TOOL_CATALOG = `Tool-Katalog (für navigateTo / setToolInput):
+- leadinbox: eingehende Website-Leads ansehen, qualifizieren, in einen Brief überführen
+- baumeister: Creative Brief erstellen (Brief-Engine) + Landingpage-Strukturen
+- stratege: vollständige Kampagnen-Strategien entwickeln
+- prometheus: system-/strategieweite Wachstums- & Go-to-Market-Fragen
+- spaeher: Markt-/Wettbewerbsanalyse in Echtzeit (D2C Beauty/Health DACH)
+- persona: KI-Buyer-Personas erstellen
+- konversator: Marketing-Beratung/Brainstorming im Chat
+- visionar: visuelle Assets aus Text generieren
+- animator: statische Bilder animieren (Video)
+- resonator: plattformspezifische Social-Media-Posts
+- personalisator: Inhalte für Zielgruppen/Personas anpassen
+- kolorit: komplettes Brand-Style-Guide entwerfen
+- sequenzer: mehrstufige E-Mail-Drip-Kampagnen
+- diplomat: strategische E-Mail-Antworten formulieren
+- markenwaechter: Markenrichtlinien definieren/prüfen (Brand-Check)
+- auditor: Assets auf EU-AI-Act/HCVO/DSGVO-Compliance prüfen
+- analytiker: Performance-Daten visualisieren/analysieren
+- experimentator: A/B-Tests für Assets erstellen/auswerten
+- berichterstatter: automatisierte Projekt-/Performance-Berichte
+- kalkulator: Budgets/Kosten kalkulieren
+- dirigent: Projektstatus analysieren + Empfehlungen
+- nexus: das gesamte Wissen des Project OS durchsuchen
+- systemaudit: ehrlicher Live-Systemzustand des OS`;
 
 export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; navigateTo: (page: string) => void; }> = ({ isOpen, onClose, navigateTo }) => {
     const { addTask, setToolInput } = useTasks();
@@ -56,7 +84,11 @@ export const CommandBar: React.FC<{ isOpen: boolean; onClose: () => void; naviga
         const setToolInputFn = { name: 'setToolInput', description: 'Prepares an AI tool for a specific task and navigates there.', parameters: { type: Type.OBJECT, properties: { tool: { type: Type.STRING, description: 'The tool to start (e.g., "visionar").' }, prompt: { type: Type.STRING, description: 'The prompt or instruction for the tool.' } }, required: ['tool', 'prompt'] } };
         const tools = [{ functionDeclarations: [navigateToFn, createTaskFn, setToolInputFn] }];
 
-        const systemInstruction = `You are MAGNUM AI, the central intelligence of the Project OS v3.0. Your purpose is to assist the user by executing commands. You can navigate, create tasks, or prepare tools like 'visionar' to generate images. Be concise. When a function is called, provide a brief confirmation text in English. You must use a function call to perform any of these actions.`;
+        const systemInstruction = withMirrouKnowledge(`Du bist MAGNUM AI, die zentrale Orchestrierungs-Intelligenz des Project OS, das Mirrou Creative Studio führt. Du führst Befehle aus: navigiere (navigateTo), erstelle Tasks (createTask) oder bereite ein Tool mit einem konkreten Auftrag vor und navigiere dorthin (setToolInput).
+
+Wähle das passende Tool anhand des Katalogs unten. Will der Nutzer ein Asset/Output (Brief, Persona, Visual, Posts, Strategie, Analyse …), nutze setToolInput statt nur zu navigieren — und formuliere dafür einen präzisen, mirrou-konformen Prompt (nutze ICP/Voice/Compliance aus dem Wissen oben). Für eine Aktion MUSST du einen Function-Call nutzen. Antworte knapp auf Deutsch und bestätige die Aktion.
+
+${TOOL_CATALOG}`);
 
         const history = messages.map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'model',
