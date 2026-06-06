@@ -102,6 +102,27 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
     }
   }, [user, load]);
 
+  const exportCSV = React.useCallback(() => {
+    if (leads.length === 0) return;
+    const headers = ['Eingang', 'Name', 'E-Mail', 'Brand', 'Website', 'Ad-Spend', 'Status', 'DSGVO-Consent', 'Nachricht'];
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = leads.map((l) => [
+      fmtDate(l.created_at), l.name, l.email, l.brand, l.website || '',
+      l.ad_spend ? (SPEND_LABEL[l.ad_spend] || l.ad_spend) : '',
+      STATUS_LABEL[l.status] || l.status, l.consent ? 'Ja' : 'Nein',
+      (l.message || '').replace(/[\r\n]+/g, ' '),
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map(esc).join(',')).join('\r\n');
+    // BOM so Excel reads UTF-8 (Umlaute) correctly.
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mirrou-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [leads]);
+
   React.useEffect(() => { load(); }, [load]);
 
   const newCount = leads.filter((l) => l.status === 'new').length;
@@ -118,13 +139,23 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
             {newCount > 0 && <span className="ml-2 text-[#A855F7]">· {newCount} neu</span>}
           </p>
         </div>
-        <button
-          onClick={load}
-          disabled={state === 'loading'}
-          className="font-mono text-xs uppercase tracking-widest text-white border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
-        >
-          {state === 'loading' ? 'Lädt…' : '↻ Aktualisieren'}
-        </button>
+        <div className="flex items-center gap-2">
+          {leads.length > 0 && (
+            <button
+              onClick={exportCSV}
+              className="font-mono text-xs uppercase tracking-widest text-white border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition-colors"
+            >
+              ↓ CSV-Export
+            </button>
+          )}
+          <button
+            onClick={load}
+            disabled={state === 'loading'}
+            className="font-mono text-xs uppercase tracking-widest text-white border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
+          >
+            {state === 'loading' ? 'Lädt…' : '↻ Aktualisieren'}
+          </button>
+        </div>
       </div>
 
       {/* States */}

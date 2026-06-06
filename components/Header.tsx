@@ -2,6 +2,32 @@
 import React, { useState } from 'react';
 import { useTasks } from '../contexts/AppContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+/** New-lead count for the nav badge. Only fetches for logged-in users; the
+ *  endpoint 403s for non-Mirrou members (count stays 0). Refreshes each minute. */
+function useNewLeadCount(token?: string | null): number {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    if (!token) { setCount(0); return; }
+    let cancelled = false;
+    const fetchCount = () => {
+      fetch(`${API_URL}/api/leads`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!cancelled && Array.isArray(d?.leads)) {
+            setCount(d.leads.filter((l: { status?: string }) => (l.status || 'new') === 'new').length);
+          }
+        })
+        .catch(() => { /* silent — badge just stays hidden */ });
+    };
+    fetchCount();
+    const id = setInterval(fetchCount, 60000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [token]);
+  return count;
+}
+
 const Logo: React.FC = () => (
   <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="20" cy="20" r="19.5" stroke="#FFFFFF" strokeOpacity="0.5" />
@@ -72,14 +98,21 @@ const NavDropdown: React.FC<DropdownProps> = ({ title, children }) => {
     );
 };
 
-const DropdownItem: React.FC<{ page: string, currentPage: string, navigateTo: (page: string) => void, title: string, description: string }> = ({ page, currentPage, navigateTo, title, description }) => {
+const DropdownItem: React.FC<{ page: string, currentPage: string, navigateTo: (page: string) => void, title: string, description: string, badge?: number }> = ({ page, currentPage, navigateTo, title, description, badge }) => {
     const isActive = currentPage === page;
     return (
         <button
             onClick={() => navigateTo(page)}
             className={`w-full text-left p-3 rounded-md transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
         >
-            <span className="font-medium text-white">{title}</span>
+            <span className="font-medium text-white">
+                {title}
+                {badge ? (
+                    <span className="ml-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 align-middle text-[10px] font-mono rounded-full bg-[#A855F7] text-white">
+                        {badge}
+                    </span>
+                ) : null}
+            </span>
             <span className="block text-xs text-gray-400 mt-1">{description}</span>
         </button>
     );
@@ -95,6 +128,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ navigateTo, currentPage, onOpenCommandBar, isSecretMode }) => {
   const { user, login, logout, userProfile } = useTasks();
+  const newLeadCount = useNewLeadCount(user?.token);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-lg border-b border-white/10">
@@ -164,7 +198,7 @@ const Header: React.FC<HeaderProps> = ({ navigateTo, currentPage, onOpenCommandB
             <NavDropdown title="Communication">
                 <DropdownItem page="diplomat" currentPage={currentPage} navigateTo={navigateTo} title="Diplomat" description="Formulates strategic responses to emails." />
                 <DropdownItem page="chronist" currentPage={currentPage} navigateTo={navigateTo} title="Chronicler" description="Manages contacts and interactions (CRM)." />
-                <DropdownItem page="leadinbox" currentPage={currentPage} navigateTo={navigateTo} title="Lead Inbox" description="Incoming leads from the Mirrou website contact form." />
+                <DropdownItem page="leadinbox" currentPage={currentPage} navigateTo={navigateTo} title="Lead Inbox" description="Incoming leads from the Mirrou website contact form." badge={newLeadCount} />
                 <DropdownItem page="gespraechsleiter" currentPage={currentPage} navigateTo={navigateTo} title="Negotiator" description="Demonstrates AI collaboration in meetings." />
                 <DropdownItem page="auditorium" currentPage={currentPage} navigateTo={navigateTo} title="Auditorium" description="Central review center for creative approvals." />
             </NavDropdown>
