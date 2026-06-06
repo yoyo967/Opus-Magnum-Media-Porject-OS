@@ -1,5 +1,7 @@
 import React from 'react';
 import { useTasks } from '../contexts/AppContext';
+import { getGeminiClient } from '@/utils/geminiClient';
+import { MIRROU_KNOWLEDGE } from '@/tenants';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -51,11 +53,13 @@ const fmtDate = (iso: string | null): string => {
 };
 
 const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateTo }) => {
-  const { user } = useTasks();
+  const { user, setToolInput } = useTasks();
   const [leads, setLeads] = React.useState<Lead[]>([]);
   const [state, setState] = React.useState<'idle' | 'loading' | 'error'>('loading');
   const [error, setError] = React.useState('');
   const [selected, setSelected] = React.useState<Lead | null>(null);
+  const [qualifying, setQualifying] = React.useState(false);
+  const [qualifications, setQualifications] = React.useState<Record<string, string>>({});
 
   const load = React.useCallback(async () => {
     if (!user?.token) {
@@ -122,6 +126,47 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
     a.click();
     URL.revokeObjectURL(url);
   }, [leads]);
+
+  // L3 Playbook step 1: qualify a lead against the Mirrou ICP (grounded).
+  const qualifyLead = React.useCallback(async (lead: Lead) => {
+    setQualifying(true);
+    try {
+      const ai = getGeminiClient();
+      const spend = lead.ad_spend ? (SPEND_LABEL[lead.ad_spend] || lead.ad_spend) : '—';
+      const prompt =
+        `Qualifiziere diesen eingehenden Lead für Mirrou (D2C Beauty/Health DACH, Ad-Spend 10–150k €/Monat).\n` +
+        `Lead — Name: ${lead.name}; Brand: ${lead.brand}; Website: ${lead.website || '—'}; ` +
+        `Ad-Spend: ${spend}; Nachricht: "${lead.message}".\n\n` +
+        `Antworte KURZ auf Deutsch (max. ~120 Wörter, Markdown):\n` +
+        `1. **ICP-Fit:** Passt / Teilweise / Außerhalb — 1 Satz Begründung.\n` +
+        `2. **Signale:** Ad-Spend-Einordnung + mögliche Creative-Fatigue-Hinweise.\n` +
+        `3. **Nächster Schritt + Brief-Angle:** 1–2 Sätze.`;
+      const res = await ai.models.generateContent({
+        model: 'gemini-2.5-pro',
+        contents: prompt,
+        config: { systemInstruction: MIRROU_KNOWLEDGE },
+      });
+      setQualifications((prev) => ({ ...prev, [lead.id]: res.text }));
+    } catch (e: any) {
+      setQualifications((prev) => ({ ...prev, [lead.id]: 'Qualifizierung fehlgeschlagen: ' + (e?.message || 'Fehler') }));
+    } finally {
+      setQualifying(false);
+    }
+  }, []);
+
+  // L3 Playbook step 2: hand the lead (+ qualification) to Baumeister as a
+  // Creative Brief. setToolInput auto-navigates there (App.tsx) and prefills.
+  const sendToBrief = React.useCallback((lead: Lead) => {
+    const q = qualifications[lead.id];
+    const spend = lead.ad_spend ? (SPEND_LABEL[lead.ad_spend] || lead.ad_spend) : '—';
+    const goal =
+      `Creative Brief für eingehenden Lead.\n` +
+      `Brand: ${lead.brand} · Ad-Spend: ${spend}\n` +
+      `Anfrage: "${lead.message}"\n` +
+      (q ? `\nQualifizierung:\n${q}\n` : '') +
+      `\nErstelle einen Creative Brief, der die Creative-Fatigue dieser Brand adressiert (ICP-konform, Mirrou-Methodik).`;
+    setToolInput({ tool: 'baumeister', prompt: goal, fields: { brand: lead.brand }, sourceTaskId: -1 });
+  }, [qualifications, setToolInput]);
 
   React.useEffect(() => { load(); }, [load]);
 
@@ -237,6 +282,31 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                 <h2 className="text-2xl font-bold text-white">{selected.name || '—'}</h2>
               </div>
               <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+
+            {/* L3 Playbook: Lead → Qualify → Brief */}
+            <div className="mb-6 rounded-lg border border-[#A855F7]/25 bg-[#A855F7]/5 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-[#A855F7] mb-3">Playbook · Lead → Brief</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => qualifyLead(selected)}
+                  disabled={qualifying}
+                  className="font-mono text-[10px] uppercase tracking-wider text-white border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
+                >
+                  {qualifying ? 'Qualifiziert…' : '🎯 Qualifizieren (KI)'}
+                </button>
+                <button
+                  onClick={() => sendToBrief(selected)}
+                  className="font-mono text-[10px] uppercase tracking-wider text-white border border-[#A855F7]/50 bg-[#A855F7]/10 px-3 py-1.5 rounded-full hover:bg-[#A855F7]/20 transition-colors"
+                >
+                  → Creative Brief
+                </button>
+              </div>
+              {qualifications[selected.id] && (
+                <div className="mt-3 text-xs text-gray-200 whitespace-pre-wrap leading-relaxed border-t border-white/10 pt-3">
+                  {qualifications[selected.id]}
+                </div>
+              )}
             </div>
 
             {/* Status-Pipeline */}

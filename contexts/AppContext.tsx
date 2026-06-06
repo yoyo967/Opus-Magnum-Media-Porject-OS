@@ -140,6 +140,9 @@ export type ToolInput = {
     tool: string;
     prompt?: string;
     imageUrl?: string;
+    /** Optional structured prefill for tools with form fields (e.g. Baumeister
+     *  brand/budget). Additive — tools that only read `prompt` ignore it. */
+    fields?: Record<string, string>;
     sourceTaskId: number;
 };
 

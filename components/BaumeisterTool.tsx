@@ -1,7 +1,8 @@
 import { getGeminiClient } from '@/utils/geminiClient';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
+import { useTasks } from '../contexts/AppContext';
 import { Toast } from './Toast';
 import { buildMirrouContext } from '../tenants';
 import OutputActions from './OutputActions';
@@ -194,6 +195,17 @@ export const BaumeisterTool: React.FC = () => {
     const [briefAiLevel, setBriefAiLevel] = useState('AI-Assisted');
     const [briefData, setBriefData] = useState<any | null>(null);
     const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
+
+    // L3 chain target: a Lead (or any source) can prefill the Creative Brief
+    // via setToolInput({ tool: 'baumeister', prompt, fields:{brand} }).
+    const { toolInput } = useTasks();
+    useEffect(() => {
+        if (toolInput?.tool === 'baumeister') {
+            setActiveMode('brief-engine');
+            if (toolInput.fields?.brand) setBriefBrand(toolInput.fields.brand);
+            if (toolInput.prompt) setBriefGoal(toolInput.prompt);
+        }
+    }, [toolInput]);
 
     const briefSchema = {
         type: Type.OBJECT,
