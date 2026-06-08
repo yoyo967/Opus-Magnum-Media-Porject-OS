@@ -2,6 +2,8 @@ import React from 'react';
 import { useTasks } from '../contexts/AppContext';
 import { getGeminiClient } from '@/utils/geminiClient';
 import { MIRROU_KNOWLEDGE } from '@/tenants';
+import { db } from '../services/firebase';
+import { collection, doc, getDocs, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -60,6 +62,7 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
   const [selected, setSelected] = React.useState<Lead | null>(null);
   const [qualifying, setQualifying] = React.useState(false);
   const [qualifications, setQualifications] = React.useState<Record<string, string>>({});
+  const autoProcessed = React.useRef<Set<string>>(new Set());
 
   const load = React.useCallback(async () => {
     if (!user?.token) {
@@ -127,9 +130,10 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
     URL.revokeObjectURL(url);
   }, [leads]);
 
-  // L3 Playbook step 1: qualify a lead against the Mirrou ICP (grounded).
-  const qualifyLead = React.useCallback(async (lead: Lead) => {
-    setQualifying(true);
+  // L3/L4: qualify a lead against the Mirrou ICP (grounded) + persist to Firestore
+  // (compute once, team-shared). `isAuto` = proactive auto-run on inbox load.
+  const qualifyLead = React.useCallback(async (lead: Lead, isAuto = false) => {
+    if (!isAuto) setQualifying(true);
     try {
       const ai = getGeminiClient();
       const spend = lead.ad_spend ? (SPEND_LABEL[lead.ad_spend] || lead.ad_spend) : '—';
@@ -146,11 +150,20 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
         contents: prompt,
         config: { systemInstruction: MIRROU_KNOWLEDGE },
       });
-      setQualifications((prev) => ({ ...prev, [lead.id]: res.text }));
+      const text = res.text;
+      setQualifications((prev) => ({ ...prev, [lead.id]: text }));
+      // Persist so it's computed once and shared with the whole team.
+      try {
+        await setDoc(
+          doc(db, 'tenants', 'mirrou', 'leads', lead.id),
+          { qualification: text, qualified_at: serverTimestamp(), auto_qualified: isAuto },
+          { merge: true },
+        );
+      } catch { /* persist best-effort — display already updated */ }
     } catch (e: any) {
-      setQualifications((prev) => ({ ...prev, [lead.id]: 'Qualifizierung fehlgeschlagen: ' + (e?.message || 'Fehler') }));
+      if (!isAuto) setQualifications((prev) => ({ ...prev, [lead.id]: 'Qualifizierung fehlgeschlagen: ' + (e?.message || 'Fehler') }));
     } finally {
-      setQualifying(false);
+      if (!isAuto) setQualifying(false);
     }
   }, []);
 
@@ -169,6 +182,38 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
   }, [qualifications, setToolInput]);
 
   React.useEffect(() => { load(); }, [load]);
+
+  // L4 (proaktiv): beim Laden persistierte Qualifizierungen aus Firestore
+  // hydratisieren + neue, noch nicht qualifizierte Leads automatisch qualifizieren
+  // (gedeckelt auf 5/Lauf). Das Team sieht Leads bereits qualifiziert — ohne Klick.
+  React.useEffect(() => {
+    if (!user || leads.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const persisted: Record<string, string> = {};
+      try {
+        const snap = await getDocs(collection(db, 'tenants', 'mirrou', 'leads'));
+        snap.forEach((d) => {
+          const q = d.data()?.qualification;
+          if (typeof q === 'string' && q.trim()) persisted[d.id] = q;
+        });
+      } catch { /* ignore — auto-run is best-effort */ }
+      if (cancelled) return;
+      if (Object.keys(persisted).length) {
+        setQualifications((prev) => ({ ...persisted, ...prev }));
+        Object.keys(persisted).forEach((id) => autoProcessed.current.add(id));
+      }
+      const todo = leads
+        .filter((l) => (l.status || 'new') === 'new' && !persisted[l.id] && !autoProcessed.current.has(l.id))
+        .slice(0, 5);
+      for (const l of todo) {
+        if (cancelled) break;
+        autoProcessed.current.add(l.id);
+        await qualifyLead(l, true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, leads, qualifyLead]);
 
   const newCount = leads.filter((l) => l.status === 'new').length;
 
@@ -248,7 +293,10 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                   >
                     <td className="px-5 py-4 text-gray-400 font-mono text-xs whitespace-nowrap">{fmtDate(l.created_at)}</td>
                     <td className="px-5 py-4">
-                      <div className="text-white font-medium">{l.name || '—'}</div>
+                      <div className="text-white font-medium">
+                        {l.name || '—'}
+                        {qualifications[l.id] && <span className="ml-1.5 text-[#A855F7]" title="KI-qualifiziert">✨</span>}
+                      </div>
                       <div className="text-gray-500 text-xs">{l.email}</div>
                     </td>
                     <td className="px-5 py-4 text-gray-300">{l.brand || '—'}</td>
@@ -293,7 +341,7 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                   disabled={qualifying}
                   className="font-mono text-[10px] uppercase tracking-wider text-white border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
                 >
-                  {qualifying ? 'Qualifiziert…' : '🎯 Qualifizieren (KI)'}
+                  {qualifying ? 'Qualifiziert…' : qualifications[selected.id] ? '↻ Neu qualifizieren' : '🎯 Qualifizieren (KI)'}
                 </button>
                 <button
                   onClick={() => sendToBrief(selected)}
@@ -303,8 +351,11 @@ const LeadInbox: React.FC<{ navigateTo: (page: string) => void }> = ({ navigateT
                 </button>
               </div>
               {qualifications[selected.id] && (
-                <div className="mt-3 text-xs text-gray-200 whitespace-pre-wrap leading-relaxed border-t border-white/10 pt-3">
-                  {qualifications[selected.id]}
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <p className="font-mono text-[9px] uppercase tracking-widest text-[#A855F7]/80 mb-1.5">✨ Auto-Qualifizierung (KI)</p>
+                  <div className="text-xs text-gray-200 whitespace-pre-wrap leading-relaxed">
+                    {qualifications[selected.id]}
+                  </div>
                 </div>
               )}
             </div>
