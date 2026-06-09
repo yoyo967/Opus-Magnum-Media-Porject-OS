@@ -8,6 +8,9 @@ from slowapi.errors import RateLimitExceeded
 import uvicorn
 import os
 import re
+import json
+import urllib.request
+import urllib.error
 import secrets
 import jwt
 from passlib.context import CryptContext
@@ -385,6 +388,70 @@ def create_lead(request: Request, lead: LeadRequest):
     except Exception as e:
         print("Error saving lead to Firestore:", e)
         raise HTTPException(status_code=500, detail="Failed to save lead database entry")
+
+class HubQARequest(BaseModel):
+    question: str
+    context: str = ""
+    doc_title: str = ""
+
+@app.post("/api/hub-qa")
+@limiter.limit("15/minute")
+def hub_qa(request: Request, body: HubQARequest):
+    """Public, rate-limited Q&A for the Mirrou Document Hub. Calls Gemini
+    SERVER-SIDE (the key never leaves the server) and answers strictly from the
+    document context the client supplies. CSP-safe: the hub talks only to this
+    allowed origin, not to generativelanguage.googleapis.com directly."""
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("MIRROU_GEMINI_KEY")
+    if not key:
+        raise HTTPException(status_code=503, detail="AI not configured on this environment")
+    question = (body.question or "").strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="Question is required")
+    if len(question) > 800:
+        raise HTTPException(status_code=400, detail="Question too long")
+    context = (body.context or "")[:28000]
+    doc_title = (body.doc_title or "").strip()[:160]
+
+    system_instruction = (
+        "Du bist der Q&A-Assistent des Mirrou Document Hub (Abschlussprojekt von "
+        "Mirrou Creative Studio / Opus Magnum Media). Beantworte die Frage des Nutzers "
+        "AUSSCHLIESSLICH auf Basis des bereitgestellten KONTEXTS. Wenn die Antwort nicht "
+        "eindeutig aus dem Kontext hervorgeht, sage das ehrlich ('Das geht aus den "
+        "vorliegenden Dokumenten nicht hervor.') und rate nicht. Antworte praezise auf "
+        "Deutsch, nutze konkrete Zahlen/Fakten aus dem Kontext, halte dich kurz (max. ~6 Saetze)."
+    )
+    prompt = "KONTEXT"
+    if doc_title:
+        prompt += " (Dokument: " + doc_title + ")"
+    prompt += ":\n" + context + "\n\nFRAGE: " + question + "\n\nAntwort:"
+
+    payload = {
+        "system_instruction": {"parts": [{"text": system_instruction}]},
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.25, "maxOutputTokens": 1024},
+    }
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           "gemini-2.5-flash:generateContent?key=" + key)
+    try:
+        req = urllib.request.Request(
+            url, data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=40) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        cand = (data.get("candidates") or [{}])[0]
+        parts = (cand.get("content") or {}).get("parts") or []
+        answer = "".join(p.get("text", "") for p in parts).strip()
+        if not answer:
+            raise HTTPException(status_code=502, detail="Empty AI response")
+        return {"answer": answer, "doc_title": doc_title}
+    except HTTPException:
+        raise
+    except urllib.error.HTTPError as e:
+        print("Gemini HTTPError:", e.code, e.read().decode("utf-8", "ignore")[:300])
+        raise HTTPException(status_code=502, detail="AI request failed (upstream)")
+    except Exception as e:
+        print("hub_qa error:", e)
+        raise HTTPException(status_code=502, detail="AI request failed")
 
 @app.post("/api/auth/login")
 @limiter.limit("10/minute")
